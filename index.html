@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D'Site - Portal</title>
+    <title>D'Verse - Portal</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter -->
@@ -101,7 +101,7 @@
                 rotate 25s linear infinite;
             filter: blur(50px);
             opacity: 0.8;
-            transition: transform 0.3s ease, border-radius 3s ease-in-out;
+            transition: transform 0.3s ease, border-radius 3s ease-in-out, filter 0.3s ease;
         }
         
         /* Desynchronize the second portal's animations */
@@ -167,6 +167,40 @@
             from { opacity: 0.2; }
             to { opacity: 1; }
         }
+
+        /* Upcoming Badge */
+        .upcoming-badge {
+            position: absolute;
+            top: 20%;
+            right: 20%;
+            transform: translate(50%, -50%);
+            background-color: var(--accent-red);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 0 15px var(--accent-red);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+        }
+        
+        /* Click Animations */
+        .animate-vibrate {
+            animation: vibrate 0.4s ease-in-out;
+        }
+        @keyframes vibrate {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+            75% { transform: translateX(-8px); }
+        }
+
+        .animate-badge-pulse {
+            animation: badge-pulse 0.4s ease-in-out;
+        }
+        @keyframes badge-pulse {
+            50% { transform: translate(50%, -50%) scale(1.2); box-shadow: 0 0 25px var(--accent-red); }
+        }
     </style>
 </head>
 <body class="animated-gradient-bg flex items-center justify-center min-h-screen">
@@ -178,7 +212,7 @@
     </div>
 
     <main class="relative z-10 text-center">
-        <h1 class="text-6xl md:text-8xl font-extrabold mb-4">D'Site</h1>
+        <h1 class="text-6xl md:text-8xl font-extrabold mb-4">D'Verse</h1>
         <p class="text-xl text-gray-300 mb-16">Your portal to the D'Universe.</p>
 
         <div class="flex flex-col md:flex-row gap-16">
@@ -195,10 +229,11 @@
             </div>
             
             <!-- D'Games Portal -->
-            <div data-url="https://games.dverse.fun" id="d-games-portal" class="portal-wrapper">
+            <div data-url="#" id="d-games-portal" class="portal-wrapper">
                 <div class="portal-glow"></div>
                 <div class="portal-bubble">
                      <div class="portal-content">
+                        <div class="upcoming-badge">Upcoming</div>
                         <svg class="w-24 h-24 mb-6 text-[color:var(--accent-red)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 10.5v3m-1.5-1.5h3" />
@@ -215,7 +250,8 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const portals = document.querySelectorAll('.portal-wrapper');
+            const dAiPortal = document.getElementById('d-ai-portal');
+            const dGamesPortal = document.getElementById('d-games-portal');
             const spaceBackground = document.getElementById('space-background');
 
             // --- Starfield Generation ---
@@ -257,7 +293,7 @@
                 setTimeout(() => animatePortal(portal), randomInterval);
             }
 
-            portals.forEach(portal => {
+            [dAiPortal, dGamesPortal].forEach(portal => {
                 // Set initial random shape on load
                 const initialBorderRadius = generateBorderRadius();
                 portal.querySelector('.portal-bubble').style.borderRadius = initialBorderRadius;
@@ -269,19 +305,30 @@
 
 
             // --- Portal Click Animation ---
-            portals.forEach(portal => {
-                portal.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    
-                    if (document.body.classList.contains('portal-active')) return;
+            dAiPortal.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (document.body.classList.contains('portal-active')) return;
 
-                    document.body.classList.add('portal-active');
-                    portal.classList.add('portal-opening');
+                document.body.classList.add('portal-active');
+                dAiPortal.classList.add('portal-opening');
 
-                    setTimeout(() => {
-                        window.location.href = portal.dataset.url;
-                    }, 1000);
-                });
+                setTimeout(() => {
+                    window.location.href = dAiPortal.dataset.url;
+                }, 1000);
+            });
+
+            dGamesPortal.addEventListener('click', (e) => {
+                e.preventDefault();
+                const badge = dGamesPortal.querySelector('.upcoming-badge');
+                if (dGamesPortal.classList.contains('animate-vibrate')) return;
+
+                dGamesPortal.classList.add('animate-vibrate');
+                badge.classList.add('animate-badge-pulse');
+
+                setTimeout(() => {
+                    dGamesPortal.classList.remove('animate-vibrate');
+                    badge.classList.remove('animate-badge-pulse');
+                }, 500);
             });
         });
     </script>
