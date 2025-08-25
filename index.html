@@ -58,7 +58,7 @@
         .portal-wrapper {
             position: relative;
             cursor: pointer;
-            border-radius: 50%; /* Make the boundary a circle */
+            border-radius: 50%;
         }
 
         .portal-bubble {
@@ -102,7 +102,6 @@
             transition: transform 0.3s ease, border-radius 3s ease-in-out, filter 0.3s ease;
         }
         
-        /* Desynchronize the second portal's animations */
         #d-games-portal .portal-glow {
             animation-delay: -4s, -6s, -12s;
         }
@@ -136,7 +135,6 @@
             to { transform: rotate(-360deg); }
         }
 
-        /* Portal Open Animation */
         .portal-opening {
             animation: openPortal 1s forwards cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -154,7 +152,6 @@
             to { opacity: 0; }
         }
 
-        /* Starfield Background */
         .star {
             position: absolute;
             background: white;
@@ -258,6 +255,22 @@
             const usernameDisplay = document.getElementById('username-display');
             const logoutBtn = document.getElementById('logout-btn');
 
+            // --- Starfield Generation ---
+            function createStars() {
+                for (let i = 0; i < 100; i++) {
+                    const star = document.createElement('div');
+                    star.classList.add('star');
+                    const size = Math.random() * 2 + 1;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.animationDelay = `${Math.random() * 2}s`;
+                    spaceBackground.appendChild(star);
+                }
+            }
+            createStars();
+
             // --- Cookie Helper Functions ---
             function setCookie(name, value, days, domain) {
                 let expires = "";
@@ -290,7 +303,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             const redirectUrl = urlParams.get('redirect_url');
             if (redirectUrl) {
-                // Using sessionStorage which is cleared when the tab is closed.
                 sessionStorage.setItem('authRedirectUrl', redirectUrl);
                 loginModal.classList.remove('hidden');
             }
@@ -331,25 +343,22 @@
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
-                // --- Login Simulation ---
                 const username = document.getElementById('username').value;
                 const sessionToken = Array(32).fill(0).map(() => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.charAt(Math.random() * 62)).join('');
                 const userData = { username: username, credits: 100, lastLogin: new Date().toISOString() };
 
-                // --- Save Session to Cookies ---
                 const userDataString = encodeURIComponent(JSON.stringify(userData));
                 setCookie('dverseSessionToken', sessionToken, 7, '.dverse.fun');
                 setCookie('dverseUserData', userDataString, 7, '.dverse.fun');
 
-                // --- Perform Redirect ---
                 const savedRedirectUrl = sessionStorage.getItem('authRedirectUrl');
                 if (savedRedirectUrl) {
-                    sessionStorage.removeItem('authRedirectUrl'); // Clean Up
+                    sessionStorage.removeItem('authRedirectUrl');
                     const finalUrl = `${savedRedirectUrl}?token=${sessionToken}`;
                     window.location.href = finalUrl;
                 } else {
                     loginModal.classList.add('hidden');
-                    checkSession(); // Update UI to show logged-in state
+                    checkSession();
                 }
             });
 
