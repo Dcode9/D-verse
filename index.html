@@ -180,7 +180,7 @@
 
     <!-- Sign In / User Profile -->
     <div id="auth-container" class="absolute top-6 right-6 z-20">
-        <a id="sign-in-btn" href="https://authfordev.dverse.fun/login" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition">
+        <a id="sign-in-btn" href="#" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition">
             Sign in with Google
         </a>
         <div id="user-info" class="hidden glass-panel text-white font-semibold py-2 px-5 rounded-lg flex items-center gap-4">
@@ -231,7 +231,6 @@
             const portals = document.querySelectorAll('.portal-wrapper');
             const spaceBackground = document.getElementById('space-background');
             const signInBtn = document.getElementById('sign-in-btn');
-            const authContainer = document.getElementById('auth-container');
             const userInfo = document.getElementById('user-info');
             const usernameDisplay = document.getElementById('username-display');
             const userAvatar = document.getElementById('user-avatar');
@@ -264,6 +263,12 @@
                     signInBtn.classList.remove('hidden');
                     userInfo.classList.add('hidden');
                     subtitle.textContent = "Your portal to the D'Universe.";
+                    
+                    // Dynamically set the login URL
+                    const currentUrl = window.location.href;
+                    const loginUrl = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(currentUrl)}`;
+                    signInBtn.href = loginUrl;
+                    
                     return;
                 }
 
@@ -295,15 +300,15 @@
                 checkAuthStatus(); // Re-check status to update UI
             }
             
-            // --- Handle Incoming Sign-In Requests ---
+            // --- Handle Incoming Sign-In Requests from other sites ---
             const urlParams = new URLSearchParams(window.location.search);
             const redirectUrl = urlParams.get('redirect_url');
             if (redirectUrl) {
-                // Construct the login URL and redirect immediately
-                const loginUrl = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
-                window.location.href = loginUrl;
+                // If D'Games sent the user here, save the URL and redirect to the auth server
+                localStorage.setItem('authRedirectUrl', redirectUrl);
+                window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
             } else {
-                 // If not a redirect request, just check the auth status
+                 // If not a redirect request, just check the auth status on page load
                 checkAuthStatus();
             }
 
