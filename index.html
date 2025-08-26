@@ -184,11 +184,11 @@
         <div id="error-display" class="hidden text-red-400 bg-red-900/50 p-2 rounded-lg text-sm max-w-sm"></div>
         
         <div id="auth-container">
-            <!-- Logged Out State -->
-            <button id="sign-in-btn" class="hidden glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition disabled:opacity-50 disabled:cursor-wait" disabled>
+            <!-- **FIX:** Sign-in button is now visible by default. JS will hide it if needed. -->
+            <button id="sign-in-btn" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition">
                 Sign in with Google
             </button>
-            <!-- Logged In State -->
+            <!-- Logged In State (remains hidden by default) -->
             <div id="user-info" class="hidden glass-panel text-white font-semibold py-2 px-5 rounded-lg flex items-center gap-4">
                 <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full">
                 <div>
@@ -286,8 +286,6 @@
                 signInBtn.classList.remove('hidden');
                 userInfo.classList.add('hidden');
                 subtitle.textContent = "Your portal to the D'Universe.";
-                signInBtn.disabled = false;
-                signInBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-wait');
             }
 
             function logout() {
