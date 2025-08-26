@@ -191,6 +191,8 @@
             <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full">
             <div>
                 <p id="user-name" class="font-semibold"></p>
+                <!-- Added credits display -->
+                <p id="user-credits" class="text-xs text-gray-400"></p> 
             </div>
             <button id="logout-btn" class="text-red-400 hover:text-red-500 transition text-sm">Logout</button>
         </div>
@@ -239,6 +241,7 @@
             const signInBtn = document.getElementById('sign-in-btn');
             const userInfo = document.getElementById('user-info');
             const userNameDisplay = document.getElementById('user-name');
+            const userCreditsDisplay = document.getElementById('user-credits'); // Added credits element
             const userAvatar = document.getElementById('user-avatar');
             const logoutBtn = document.getElementById('logout-btn');
             const subtitle = document.getElementById('subtitle');
@@ -272,21 +275,24 @@
                 } else {
                     // --- LOGGED IN STATE ---
                     try {
+                        console.log("Session token found. Fetching user data...");
                         const response = await fetch('https://authfordev.dverse.fun/api/user', {
                             credentials: 'include' // CRITICAL: Sends the cookie
                         });
 
                         if (!response.ok) {
-                            console.error("Auth token is invalid, signing out.");
+                            console.error("Auth token is invalid or API error. Status:", response.status);
                             logout();
                             return;
                         }
 
                         const userData = await response.json();
+                        console.log("User data received:", userData);
                         
                         signInBtn.classList.add('hidden');
                         userInfo.classList.remove('hidden');
                         userNameDisplay.textContent = userData.name;
+                        userCreditsDisplay.textContent = `Credits: ${userData.credits}`; // Display credits
                         userAvatar.src = userData.avatarUrl;
                         subtitle.textContent = `Welcome, ${userData.name}`;
 
@@ -335,19 +341,16 @@
                     const maxDistance = 250; // The radius of the magnetic field
 
                     if (distance < maxDistance) {
-                        // The force is stronger when the mouse is closer
-                        const force = (1 - (distance / maxDistance)) * 0.75; // 0.75 is the strength
+                        const force = (1 - (distance / maxDistance)) * 0.75;
                         const pullX = dx * force;
                         const pullY = dy * force;
                         portal.style.transform = `translate(${pullX}px, ${pullY}px)`;
                     } else {
-                        // Let CSS transition handle snapping back
                         portal.style.transform = `translate(0px, 0px)`;
                     }
                 }
                 requestAnimationFrame(animateMagneticEffect);
             }
-            // Start the animation loop for the magnetic effect
             animateMagneticEffect();
 
 
