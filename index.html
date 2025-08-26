@@ -192,7 +192,7 @@
 
     <main class="relative z-10 text-center p-4">
         <h1 class="text-5xl md:text-8xl font-extrabold mb-4">D'Verse</h1>
-        <p class="text-lg md:text-xl text-gray-300 mb-12 md:mb-16">Your portal to the D'Universe.</p>
+        <p id="subtitle" class="text-lg md:text-xl text-gray-300 mb-12 md:mb-16">Your portal to the D'Universe.</p>
 
         <div class="flex flex-col md:flex-row gap-12 md:gap-16 items-center justify-center">
             <!-- D'Ai Portal -->
@@ -236,6 +236,7 @@
             const usernameDisplay = document.getElementById('username-display');
             const userAvatar = document.getElementById('user-avatar');
             const logoutBtn = document.getElementById('logout-btn');
+            const subtitle = document.getElementById('subtitle');
 
             // --- Cookie Helper Functions ---
             function getCookie(name) {
@@ -262,6 +263,7 @@
                     // Logged-Out State
                     signInBtn.classList.remove('hidden');
                     userInfo.classList.add('hidden');
+                    subtitle.textContent = "Your portal to the D'Universe.";
                     return;
                 }
 
@@ -277,6 +279,7 @@
                         userInfo.classList.remove('hidden');
                         usernameDisplay.textContent = userData.name;
                         userAvatar.src = userData.avatarUrl;
+                        subtitle.textContent = `Welcome, ${userData.name}`;
                     } else {
                         // Token is invalid or expired
                         logout();
@@ -289,8 +292,7 @@
 
             function logout() {
                 eraseCookie('dverseSessionToken', '.dverse.fun');
-                signInBtn.classList.remove('hidden');
-                userInfo.classList.add('hidden');
+                checkAuthStatus(); // Re-check status to update UI
             }
             
             // --- Handle Incoming Sign-In Requests ---
