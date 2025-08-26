@@ -59,7 +59,6 @@
             position: relative;
             cursor: pointer;
             border-radius: 50%;
-            /* Added for the magnetic effect to smoothly snap back */
             transition: transform 0.3s ease-out;
         }
 
@@ -181,21 +180,23 @@
     </div>
 
     <!-- Sign In / User Profile -->
-    <div id="auth-container" class="absolute top-6 right-6 z-20">
-        <!-- Logged Out State (Visible by default, JS will hide it if logged in) -->
-        <!-- **FIX:** Changed to a button to prevent premature navigation. Added disabled state. -->
-        <button id="sign-in-btn" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition disabled:opacity-50 disabled:cursor-wait" disabled>
-            Sign in with Google
-        </button>
-        <!-- Logged In State (Hidden by default) -->
-        <div id="user-info" class="hidden glass-panel text-white font-semibold py-2 px-5 rounded-lg flex items-center gap-4">
-            <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full">
-            <div>
-                <p id="user-name" class="font-semibold"></p>
-                <!-- Added credits display -->
-                <p id="user-credits" class="text-xs text-gray-400"></p> 
+    <div class="absolute top-6 right-6 z-20 space-y-2 text-right">
+        <div id="error-display" class="hidden text-red-400 bg-red-900/50 p-2 rounded-lg text-sm max-w-sm"></div>
+        
+        <div id="auth-container">
+            <!-- Logged Out State -->
+            <button id="sign-in-btn" class="hidden glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition disabled:opacity-50 disabled:cursor-wait" disabled>
+                Sign in with Google
+            </button>
+            <!-- Logged In State -->
+            <div id="user-info" class="hidden glass-panel text-white font-semibold py-2 px-5 rounded-lg flex items-center gap-4">
+                <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full">
+                <div>
+                    <p id="user-name" class="font-semibold"></p>
+                    <p id="user-credits" class="text-xs text-gray-400"></p> 
+                </div>
+                <button id="logout-btn" class="text-red-400 hover:text-red-500 transition text-sm">Logout</button>
             </div>
-            <button id="logout-btn" class="text-red-400 hover:text-red-500 transition text-sm">Logout</button>
         </div>
     </div>
 
@@ -246,32 +247,33 @@
             const userAvatar = document.getElementById('user-avatar');
             const logoutBtn = document.getElementById('logout-btn');
             const subtitle = document.getElementById('subtitle');
+            const errorDisplay = document.getElementById('error-display');
 
             // --- Authentication Logic ---
             async function checkAuthStatus() {
                 try {
-                    console.log("Attempting to fetch user data to verify session...");
                     const response = await fetch('https://authfordev.dverse.fun/api/user', {
-                        credentials: 'include' // CRITICAL: This tells the browser to send cookies
+                        credentials: 'include'
                     });
 
                     if (!response.ok) {
-                        console.log("No valid session found. Displaying sign-in button.");
                         renderLoggedOutState();
                         return;
                     }
 
                     const userData = await response.json();
-                    console.log("User data received:", userData);
                     renderLoggedInState(userData);
 
                 } catch (error) {
                     console.error("Failed to fetch user data (network/CORS error):", error);
-                    renderLoggedOutState(); // Fallback to logged out state
+                    errorDisplay.textContent = "Error: Could not connect to the authentication server. Please check the server logs and CORS configuration.";
+                    errorDisplay.classList.remove('hidden');
+                    renderLoggedOutState(); 
                 }
             }
 
             function renderLoggedInState(userData) {
+                errorDisplay.classList.add('hidden');
                 signInBtn.classList.add('hidden');
                 userInfo.classList.remove('hidden');
                 userNameDisplay.textContent = userData.name;
@@ -284,14 +286,11 @@
                 signInBtn.classList.remove('hidden');
                 userInfo.classList.add('hidden');
                 subtitle.textContent = "Your portal to the D'Universe.";
-                // **FIX:** Enable the button now that we know the user is logged out.
                 signInBtn.disabled = false;
-                signInBtn.classList.remove('disabled:opacity-50', 'cursor-wait');
+                signInBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-wait');
             }
 
             function logout() {
-                // This function correctly redirects to the backend to clear the secure cookie.
-                // You must add the /logout endpoint to your server.js file for this to work.
                 window.location.href = `https://authfordev.dverse.fun/logout?redirect_url=${encodeURIComponent(window.location.href)}`;
             }
 
@@ -303,7 +302,6 @@
                 checkAuthStatus();
             }
 
-            // **FIX:** The click handler is now separate from the state rendering.
             signInBtn.addEventListener('click', () => {
                 const redirectUrl = window.location.href.split('?')[0];
                 const loginUrl = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
