@@ -181,14 +181,15 @@
 
     <!-- Sign In / User Profile -->
     <div class="absolute top-6 right-6 z-20 space-y-2 text-right">
+        <!-- **NEW:** Dedicated container for displaying errors -->
         <div id="error-display" class="hidden text-red-400 bg-red-900/50 p-2 rounded-lg text-sm max-w-sm"></div>
         
         <div id="auth-container">
-            <!-- **FIX:** Sign-in button is now visible by default. JS will hide it if needed. -->
+            <!-- Sign-in button is visible by default -->
             <button id="sign-in-btn" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition">
                 Sign in with Google
             </button>
-            <!-- Logged In State (remains hidden by default) -->
+            <!-- Logged In State is hidden by default -->
             <div id="user-info" class="hidden glass-panel text-white font-semibold py-2 px-5 rounded-lg flex items-center gap-4">
                 <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full">
                 <div>
@@ -257,6 +258,8 @@
                     });
 
                     if (!response.ok) {
+                        // This means the user is not logged in, or the server had an error.
+                        // The server would have logged the specific error.
                         renderLoggedOutState();
                         return;
                     }
@@ -265,15 +268,17 @@
                     renderLoggedInState(userData);
 
                 } catch (error) {
-                    console.error("Failed to fetch user data (network/CORS error):", error);
-                    errorDisplay.textContent = "Error: Could not connect to the authentication server. Please check the server logs and CORS configuration.";
+                    // This block catches network errors (like CORS) where the request never completes.
+                    console.error("Fetch failed:", error);
+                    // **NEW:** Display the error clearly on the page.
+                    errorDisplay.textContent = "Error: Could not connect to the authentication server. This is likely a CORS issue. Please ensure the auth server is running and configured correctly.";
                     errorDisplay.classList.remove('hidden');
                     renderLoggedOutState(); 
                 }
             }
 
             function renderLoggedInState(userData) {
-                errorDisplay.classList.add('hidden');
+                errorDisplay.classList.add('hidden'); // Hide error on success
                 signInBtn.classList.add('hidden');
                 userInfo.classList.remove('hidden');
                 userNameDisplay.textContent = userData.name;
