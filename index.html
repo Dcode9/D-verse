@@ -59,6 +59,8 @@
             position: relative;
             cursor: pointer;
             border-radius: 50%;
+            /* Added for the magnetic effect to smoothly snap back */
+            transition: transform 0.3s ease-out;
         }
 
         .portal-bubble {
@@ -180,9 +182,11 @@
 
     <!-- Sign In / User Profile -->
     <div id="auth-container" class="absolute top-6 right-6 z-20">
-        <a id="sign-in-btn" href="#" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition hidden">
+        <!-- Logged Out State (Visible by default, JS will hide it if logged in) -->
+        <a id="sign-in-btn" href="#" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition">
             Sign in with Google
         </a>
+        <!-- Logged In State (Hidden by default) -->
         <div id="user-info" class="hidden glass-panel text-white font-semibold py-2 px-5 rounded-lg flex items-center gap-4">
             <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full">
             <div>
@@ -234,7 +238,7 @@
             const spaceBackground = document.getElementById('space-background');
             const signInBtn = document.getElementById('sign-in-btn');
             const userInfo = document.getElementById('user-info');
-            const usernameDisplay = document.getElementById('username-display');
+            const userNameDisplay = document.getElementById('user-name');
             const userAvatar = document.getElementById('user-avatar');
             const logoutBtn = document.getElementById('logout-btn');
             const subtitle = document.getElementById('subtitle');
@@ -282,7 +286,7 @@
                         
                         signInBtn.classList.add('hidden');
                         userInfo.classList.remove('hidden');
-                        usernameDisplay.textContent = userData.name;
+                        userNameDisplay.textContent = userData.name;
                         userAvatar.src = userData.avatarUrl;
                         subtitle.textContent = `Welcome, ${userData.name}`;
 
@@ -300,14 +304,51 @@
 
             // --- Handle Incoming Sign-In Requests from other sites ---
             const urlParams = new URLSearchParams(window.location.search);
-            const redirectUrl = urlParams.get('redirect_url');
-            if (redirectUrl) {
-                window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
+            const redirectUrlFromParams = urlParams.get('redirect_url');
+            if (redirectUrlFromParams) {
+                window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrlFromParams)}`;
             } else {
                 checkAuthStatus();
             }
 
             logoutBtn.addEventListener('click', logout);
+
+            // --- Magnetic Portal Effect ---
+            const mouse = { x: 0, y: 0 };
+            const magneticPortals = Array.from(portals);
+
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            });
+
+            function animateMagneticEffect() {
+                for (const portal of magneticPortals) {
+                    const rect = portal.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+
+                    const dx = mouse.x - centerX;
+                    const dy = mouse.y - centerY;
+
+                    const distance = Math.hypot(dx, dy);
+                    const maxDistance = 250; // The radius of the magnetic field
+
+                    if (distance < maxDistance) {
+                        // The force is stronger when the mouse is closer
+                        const force = (1 - (distance / maxDistance)) * 0.75; // 0.75 is the strength
+                        const pullX = dx * force;
+                        const pullY = dy * force;
+                        portal.style.transform = `translate(${pullX}px, ${pullY}px)`;
+                    } else {
+                        // Let CSS transition handle snapping back
+                        portal.style.transform = `translate(0px, 0px)`;
+                    }
+                }
+                requestAnimationFrame(animateMagneticEffect);
+            }
+            // Start the animation loop for the magnetic effect
+            animateMagneticEffect();
 
 
             // --- Portal Animations ---
@@ -320,21 +361,21 @@
                 return `${vals[0]}% ${vals[1]}% ${vals[2]}% ${vals[3]}% / ${vals[4]}% ${vals[5]}% ${vals[6]}% ${vals[7]}%`;
             }
 
-            function animatePortal(portal) {
+            function animatePortalShape(portal) {
                 const bubble = portal.querySelector('.portal-bubble');
                 const glow = portal.querySelector('.portal-glow');
                 const newBorderRadius = generateBorderRadius();
                 bubble.style.borderRadius = newBorderRadius;
                 glow.style.borderRadius = newBorderRadius;
                 const randomInterval = getRandomVal(3000, 5000);
-                setTimeout(() => animatePortal(portal), randomInterval);
+                setTimeout(() => animatePortalShape(portal), randomInterval);
             }
 
             portals.forEach(portal => {
                 const initialBorderRadius = generateBorderRadius();
                 portal.querySelector('.portal-bubble').style.borderRadius = initialBorderRadius;
                 portal.querySelector('.portal-glow').style.borderRadius = initialBorderRadius;
-                animatePortal(portal);
+                animatePortalShape(portal);
             });
 
             portals.forEach(portal => {
