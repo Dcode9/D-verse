@@ -181,7 +181,7 @@
 
     <!-- Sign In / User Profile -->
     <div class="absolute top-6 right-6 z-20 space-y-2 text-right">
-        <!-- **NEW:** Dedicated container for displaying errors -->
+        <!-- **FIX:** Added a dedicated container for displaying errors -->
         <div id="error-display" class="hidden text-red-400 bg-red-900/50 p-2 rounded-lg text-sm max-w-sm"></div>
         
         <div id="auth-container">
@@ -258,20 +258,23 @@
                     });
 
                     if (!response.ok) {
-                        // This means the user is not logged in, or the server had an error.
-                        // The server would have logged the specific error.
                         renderLoggedOutState();
-                        return;
+                        // **FIX:** Check if the server provided a specific error message
+                        if (response.headers.get("content-type")?.includes("application/json")) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                        }
+                        throw new Error(`Server responded with status: ${response.status}`);
                     }
 
                     const userData = await response.json();
                     renderLoggedInState(userData);
 
                 } catch (error) {
-                    // This block catches network errors (like CORS) where the request never completes.
-                    console.error("Fetch failed:", error);
-                    // **NEW:** Display the error clearly on the page.
-                    errorDisplay.textContent = "Error: Could not connect to the authentication server. This is likely a CORS issue. Please ensure the auth server is running and configured correctly.";
+                    // This block catches network errors (like CORS) and server errors.
+                    console.error("Authentication check failed:", error);
+                    // **FIX:** Display a more informative error message.
+                    errorDisplay.textContent = `Auth Error: ${error.message}. This is likely a CORS issue or the auth server is down.`;
                     errorDisplay.classList.remove('hidden');
                     renderLoggedOutState(); 
                 }
