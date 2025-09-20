@@ -180,16 +180,7 @@
 
     <!-- Sign In / User Profile -->
     <div id="auth-container" class="absolute top-6 right-6 z-20">
-        <a id="sign-in-btn" href="#" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition hidden">
-            Sign in with Google
-        </a>
-        <div id="user-info" class="hidden glass-panel text-white font-semibold py-2 px-5 rounded-lg flex items-center gap-4">
-            <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full">
-            <div>
-                <p id="user-name" class="font-semibold"></p>
-            </div>
-            <button id="logout-btn" class="text-red-400 hover:text-red-500 transition text-sm">Logout</button>
-        </div>
+        <!-- This container will be populated by the script -->
     </div>
 
     <main class="relative z-10 text-center p-4">
@@ -227,16 +218,32 @@
             </div>
         </div>
     </main>
+
+    <!-- TEMPLATES for Auth States -->
+    <template id="sign-in-template">
+        <a id="sign-in-link" href="#" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition">
+            Sign in with Google
+        </a>
+    </template>
+
+    <template id="user-profile-template">
+        <div class="glass-panel text-white font-semibold py-2 px-5 rounded-lg flex items-center gap-4">
+            <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full">
+            <div>
+                <p id="user-name" class="font-semibold"></p>
+                <p id="user-credits" class="text-sm text-gray-400"></p>
+            </div>
+            <button id="logout-btn" class="text-red-400 hover:text-red-500 transition text-sm">Logout</button>
+        </div>
+    </template>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const portals = document.querySelectorAll('.portal-wrapper');
             const spaceBackground = document.getElementById('space-background');
-            const signInBtn = document.getElementById('sign-in-btn');
-            const userInfo = document.getElementById('user-info');
-            const userNameDisplay = document.getElementById('user-name');
-            const userAvatar = document.getElementById('user-avatar');
-            const logoutBtn = document.getElementById('logout-btn');
+            const authContainer = document.getElementById('auth-container');
+            const signInTemplate = document.getElementById('sign-in-template');
+            const userProfileTemplate = document.getElementById('user-profile-template');
             const subtitle = document.getElementById('subtitle');
 
             // --- Cookie Helper Functions ---
@@ -258,13 +265,17 @@
 
                 if (!sessionToken) {
                     // --- LOGGED OUT STATE ---
-                    signInBtn.classList.remove('hidden');
-                    userInfo.classList.add('hidden');
-                    subtitle.textContent = "Your portal to the D'Universe.";
+                    const signInFragment = signInTemplate.content.cloneNode(true);
+                    const signInLink = signInFragment.getElementById('sign-in-link');
                     
+                    // Dynamically create the correct redirect URL
                     const redirectUrl = window.location.href.split('?')[0];
-                    signInBtn.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
+                    signInLink.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
                     
+                    authContainer.innerHTML = ''; // Clear previous state
+                    authContainer.appendChild(signInFragment);
+                    subtitle.textContent = "Your portal to the D'Universe.";
+
                 } else {
                     // --- LOGGED IN STATE ---
                     try {
@@ -280,20 +291,18 @@
 
                         const userData = await response.json();
                         
-                        signInBtn.classList.add('hidden');
-                        userInfo.classList.remove('hidden');
-                        userNameDisplay.textContent = userData.name;
-                        userAvatar.src = userData.avatarUrl;
+                        const profileFragment = userProfileTemplate.content.cloneNode(true);
+                        profileFragment.getElementById('user-name').textContent = userData.name;
+                        profileFragment.getElementById('user-credits').textContent = `Credits: ${userData.credits}`;
+                        profileFragment.getElementById('user-avatar').src = userData.avatarUrl;
+                        
+                        authContainer.innerHTML = ''; // Clear previous state
+                        authContainer.appendChild(profileFragment);
+                        
                         subtitle.textContent = `Welcome, ${userData.name}`;
 
-                        // CRITICAL UPDATE: Pass the token to the portal links
-                        if (sessionToken) {
-                            const aiPortal = document.getElementById('d-ai-portal');
-                            const gamesPortal = document.getElementById('d-games-portal');
-                            
-                            aiPortal.dataset.url = `https://ai.dverse.fun?token=${sessionToken}`;
-                            gamesPortal.dataset.url = `https://games.dverse.fun?token=${sessionToken}`;
-                        }
+                        // Add logout functionality after the element is in the DOM
+                        document.getElementById('logout-btn').addEventListener('click', logout);
 
                     } catch (error) {
                         console.error("Failed to fetch user data:", error);
@@ -304,9 +313,6 @@
 
             function logout() {
                 eraseCookie('dverseSessionToken', '.dverse.fun');
-                // Reset portal URLs to default
-                document.getElementById('d-ai-portal').dataset.url = 'https://ai.dverse.fun';
-                document.getElementById('d-games-portal').dataset.url = 'https://games.dverse.fun';
                 checkAuthStatus(); // Re-run the check to update the UI
             }
 
@@ -314,13 +320,12 @@
             const urlParams = new URLSearchParams(window.location.search);
             const redirectUrl = urlParams.get('redirect_url');
             if (redirectUrl) {
+                // If D'Games sent the user here, redirect to the auth server
                 window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
             } else {
+                 // If not a redirect request, just check the auth status on page load
                 checkAuthStatus();
             }
-
-            logoutBtn.addEventListener('click', logout);
-
 
             // --- Portal Animations ---
             function getRandomVal(min, max) {
@@ -382,4 +387,3 @@
     </script>
 </body>
 </html>
-
