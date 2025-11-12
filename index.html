@@ -20,6 +20,7 @@
             --accent-red: #ff416c;
             --accent-yellow: #ffc837;
             --accent-pink: #fd1d1d;
+            --accent-purple: #9f7aea; /* Added new accent color for WebBoard */
         }
 
         body {
@@ -92,7 +93,8 @@
             position: absolute;
             inset: -20px;
             z-index: -1;
-            background: conic-gradient(from var(--angle), var(--accent-blue), var(--accent-red), var(--accent-yellow), var(--accent-pink), var(--accent-blue));
+            /* Updated gradient to include new purple color */
+            background: conic-gradient(from var(--angle), var(--accent-blue), var(--accent-red), var(--accent-yellow), var(--accent-pink), var(--accent-purple), var(--accent-blue));
             background-size: 200% 200%;
             animation: 
                 spin 8s linear infinite, 
@@ -111,6 +113,17 @@
         }
          #d-games-portal .portal-content {
             animation-delay: -12s;
+        }
+
+        /* Added animation delays for the new portal */
+        #d-webboard-portal .portal-glow {
+            animation-delay: -8s, -9s, -18s;
+        }
+        #d-webboard-portal .portal-bubble {
+            animation-delay: -18s;
+        }
+         #d-webboard-portal .portal-content {
+            animation-delay: -18s;
         }
 
         .portal-wrapper:hover .portal-glow {
@@ -169,6 +182,17 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        
+        /* Gemini Dream Modal Styles */
+        .dream-modal-overlay {
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+        }
+        .dream-modal-content {
+             background: #1e1e1e;
+             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
     </style>
 </head>
 <body class="animated-gradient-bg flex items-center justify-center min-h-screen">
@@ -181,7 +205,19 @@
 
     <!-- Sign In / User Profile -->
     <div id="auth-container" class="absolute top-6 right-6 z-20">
-        <!-- This container will be populated by the script -->
+         <!-- Logged-Out State -->
+        <a id="sign-in-link" href="#" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition hidden">
+            Sign in with Google
+        </a>
+        <!-- Logged-In State -->
+        <div id="user-profile" class="hidden glass-panel text-white font-semibold py-2 px-4 rounded-lg items-center gap-4">
+            <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full">
+            <div>
+                <p id="user-name" class="font-semibold"></p>
+                <p id="user-credits" class="text-sm text-gray-400"></p>
+            </div>
+            <button id="logout-btn" class="text-red-400 hover:text-red-500 transition text-sm">Logout</button>
+        </div>
     </div>
 
     <main class="relative z-10 text-center p-4">
@@ -217,35 +253,77 @@
                     </div>
                 </div>
             </div>
+
+            <!-- NEW: D'WebBoard Portal -->
+            <div data-url="https://webboard.dverse.fun" id="d-webboard-portal" class="portal-wrapper w-72 h-72 md:w-96 md:h-96">
+                <div class="portal-glow"></div>
+                <div class="portal-bubble">
+                     <div class="portal-content">
+                        <!-- Corrected URL to raw image file -->
+                        <img src="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png" alt="WebBoard Logo" class="w-20 h-20 md:w-24 md:h-24 mb-4 md:mb-6">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-2">WebBoard</h2>
+                        <p class="text-gray-400 text-sm md:text-base">Your collaborative whiteboard.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+         <!-- ✨ Dream a Portal Button -->
+        <div id="dream-button-container" class="mt-16 text-center hidden">
+            <button id="dream-portal-btn" class="glass-panel text-white font-semibold py-3 px-6 rounded-lg hover:bg-white/20 transition-transform hover:scale-105">
+                ✨ Dream a Portal
+            </button>
         </div>
     </main>
-
-    <!-- TEMPLATES for Auth States -->
-    <template id="sign-in-template">
-        <a id="sign-in-link" href="#" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition">
-            Sign in with Google
-        </a>
-    </template>
-
-    <template id="user-profile-template">
-        <div class="glass-panel text-white font-semibold py-2 px-5 rounded-lg flex items-center gap-4">
-            <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full">
-            <div>
-                <p id="user-name" class="font-semibold"></p>
-                <p id="user-credits" class="text-sm text-gray-400"></p>
+    
+    <!-- Gemini Dream Modal -->
+    <div id="dream-modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 dream-modal-overlay hidden">
+        <div id="dream-modal-content" class="dream-modal-content rounded-2xl shadow-2xl p-6 w-full max-w-md relative">
+            <button id="close-dream-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h2 class="text-2xl font-bold mb-4">Dream a New Portal</h2>
+            <div id="dream-form">
+                <p class="text-gray-400 mb-4">Describe an idea for a new D'Verse portal. What would it do?</p>
+                <textarea id="dream-input" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-white focus:ring-2 focus:ring-accent-blue focus:outline-none" placeholder="e.g., A portal to create AI-generated music..."></textarea>
+                <button id="generate-dream-btn" class="w-full mt-4 bg-accent-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition">
+                    Generate Idea
+                </button>
             </div>
-            <button id="logout-btn" class="text-red-400 hover:text-red-500 transition text-sm">Logout</button>
+            <div id="dream-results" class="hidden">
+                 <!-- Results will be injected here -->
+            </div>
+             <div id="dream-loading" class="hidden text-center py-8">
+                <p class="text-gray-400">Dreaming up your idea...</p>
+            </div>
         </div>
-    </template>
+    </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const portals = document.querySelectorAll('.portal-wrapper');
             const spaceBackground = document.getElementById('space-background');
-            const authContainer = document.getElementById('auth-container');
-            const signInTemplate = document.getElementById('sign-in-template');
-            const userProfileTemplate = document.getElementById('user-profile-template');
             const subtitle = document.getElementById('subtitle');
+            // Auth elements
+            const authContainer = document.getElementById('auth-container');
+            const signInLink = document.getElementById('sign-in-link');
+            const userProfile = document.getElementById('user-profile');
+            const userAvatar = document.getElementById('user-avatar');
+            const userName = document.getElementById('user-name');
+            const userCredits = document.getElementById('user-credits');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            // Gemini Dream elements
+            const dreamButtonContainer = document.getElementById('dream-button-container');
+            const dreamPortalBtn = document.getElementById('dream-portal-btn');
+            const dreamModalOverlay = document.getElementById('dream-modal-overlay');
+            const closeDreamModalBtn = document.getElementById('close-dream-modal');
+            const dreamForm = document.getElementById('dream-form');
+            const dreamInput = document.getElementById('dream-input');
+            const generateDreamBtn = document.getElementById('generate-dream-btn');
+            const dreamResults = document.getElementById('dream-results');
+            const dreamLoading = document.getElementById('dream-loading');
+
 
             // --- Cookie Helper Functions ---
             function getCookie(name) {
@@ -255,9 +333,8 @@
                 return null;
             }
 
-            function eraseCookie(name, domain) {   
-                let domainString = domain ? `; domain=${domain}` : '';
-                document.cookie = `${name}=; Max-Age=-99999999; path=/;${domainString}`;  
+            function eraseCookie(name) {   
+                document.cookie = `${name}=; Max-Age=-99999999; path=/; domain=.dverse.fun`;  
             }
 
             // --- Authentication Logic ---
@@ -266,78 +343,121 @@
 
                 if (!sessionToken) {
                     // --- LOGGED OUT STATE ---
-                    const signInFragment = signInTemplate.content.cloneNode(true);
-                    const signInLink = signInFragment.getElementById('sign-in-link');
-                    
-                    // Dynamically create the correct redirect URL
+                    signInLink.classList.remove('hidden');
+                    userProfile.classList.add('hidden');
+                    dreamButtonContainer.classList.add('hidden');
                     const redirectUrl = window.location.href.split('?')[0];
                     signInLink.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
-                    
-                    authContainer.innerHTML = ''; // Clear previous state
-                    authContainer.appendChild(signInFragment);
                     subtitle.textContent = "Your portal to the D'Universe.";
 
                 } else {
                     // --- LOGGED IN STATE ---
                     try {
                         const response = await fetch('https://authfordev.dverse.fun/api/user', {
-                            credentials: 'include' // CRITICAL: Sends the cookie
+                            credentials: 'include'
                         });
 
                         if (!response.ok) {
                             console.error("Auth token is invalid, signing out.");
-                            logout();
-                            return;
+                            return logout();
                         }
 
                         const userData = await response.json();
                         
-                        const profileFragment = userProfileTemplate.content.cloneNode(true);
-                        profileFragment.getElementById('user-name').textContent = userData.name;
-                        profileFragment.getElementById('user-credits').textContent = `Credits: ${userData.credits}`;
-                        profileFragment.getElementById('user-avatar').src = userData.avatarUrl;
-                        
-                        authContainer.innerHTML = ''; // Clear previous state
-                        authContainer.appendChild(profileFragment);
+                        signInLink.classList.add('hidden');
+                        userProfile.classList.remove('hidden');
+                        dreamButtonContainer.classList.remove('hidden');
+
+                        userName.textContent = userData.name;
+                        userCredits.textContent = `Credits: ${userData.credits}`;
+                        userAvatar.src = userData.avatarUrl;
                         
                         subtitle.textContent = `Welcome, ${userData.name}`;
-
-                        // Add logout functionality after the element is in the DOM
-                        document.getElementById('logout-btn').addEventListener('click', logout);
+                        logoutBtn.addEventListener('click', logout);
 
                     } catch (error) {
                         console.error("Failed to fetch user data:", error);
-                        logout(); // Fallback to logged out state on API error
+                        logout();
                     }
                 }
             }
 
             function logout() {
-                eraseCookie('dverseSessionToken', '.dverse.fun');
+                eraseCookie('dverseSessionToken');
                 checkAuthStatus(); // Re-run the check to update the UI
             }
 
-            // --- Handle Incoming Sign-In Requests from other sites ---
+            // --- Handle Incoming Sign-In Requests ---
             const urlParams = new URLSearchParams(window.location.search);
             const redirectUrl = urlParams.get('redirect_url');
             if (redirectUrl) {
-                // If D'Games sent the user here, redirect to the auth server
                 window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
             } else {
-                 // If not a redirect request, just check the auth status on page load
                 checkAuthStatus();
             }
+
+            // --- Gemini Dream Logic ---
+            dreamPortalBtn.addEventListener('click', () => {
+                dreamModalOverlay.classList.remove('hidden');
+                dreamForm.classList.remove('hidden');
+                dreamResults.classList.add('hidden');
+                dreamLoading.classList.add('hidden');
+                dreamInput.value = '';
+            });
+
+            closeDreamModalBtn.addEventListener('click', () => {
+                dreamModalOverlay.classList.add('hidden');
+            });
+
+            generateDreamBtn.addEventListener('click', async () => {
+                const prompt = dreamInput.value.trim();
+                if (!prompt) return;
+
+                dreamForm.classList.add('hidden');
+                dreamLoading.classList.remove('hidden');
+
+                try {
+                    const response = await fetch('https://authfordev.dverse.fun/api/dream', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include', // Sends login cookie
+                        body: JSON.stringify({ prompt: prompt })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to generate idea from the server.');
+                    }
+
+                    const idea = await response.json();
+
+                    dreamResults.innerHTML = `
+                        <h3 class="text-xl font-bold text-accent-blue">${idea.portalName}</h3>
+                        <p class="text-gray-300 italic mb-2">"${idea.tagline}"</p>
+                        <p class="text-gray-400 mb-4">${idea.description}</p>
+                        <div class="bg-gray-800 p-3 rounded-lg">
+                            <p class="text-xs text-gray-500 font-mono mb-1">ICON IDEA</p>
+                            <p class="text-gray-300">${idea.iconPrompt}</p>
+                        </div>
+                    `;
+                    dreamLoading.classList.add('hidden');
+                    dreamResults.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error("Dream generation failed:", error);
+                    dreamResults.innerHTML = `<p class="text-red-400">Sorry, something went wrong while dreaming up your idea.</p>`;
+                    dreamLoading.classList.add('hidden');
+                    dreamResults.classList.remove('hidden');
+                }
+            });
 
             // --- Portal Animations ---
             function getRandomVal(min, max) {
                 return Math.floor(Math.random() * (max - min + 1) + min);
             }
-
             function generateBorderRadius() {
                 const vals = Array(8).fill(0).map(() => getRandomVal(40, 60));
                 return `${vals[0]}% ${vals[1]}% ${vals[2]}% ${vals[3]}% / ${vals[4]}% ${vals[5]}% ${vals[6]}% ${vals[7]}%`;
             }
-
             function animatePortal(portal) {
                 const bubble = portal.querySelector('.portal-bubble');
                 const glow = portal.querySelector('.portal-glow');
@@ -347,29 +467,25 @@
                 const randomInterval = getRandomVal(3000, 5000);
                 setTimeout(() => animatePortal(portal), randomInterval);
             }
-
             portals.forEach(portal => {
                 const initialBorderRadius = generateBorderRadius();
                 portal.querySelector('.portal-bubble').style.borderRadius = initialBorderRadius;
                 portal.querySelector('.portal-glow').style.borderRadius = initialBorderRadius;
                 animatePortal(portal);
             });
-
             portals.forEach(portal => {
                 portal.addEventListener('click', (e) => {
                     e.preventDefault();
                     if (document.body.classList.contains('portal-active')) return;
-
                     document.body.classList.add('portal-active');
                     portal.classList.add('portal-opening');
-
                     setTimeout(() => {
                         window.location.href = portal.dataset.url;
                     }, 1000);
                 });
             });
 
-             // --- Starfield Generation ---
+            // --- Starfield Generation ---
             function createStars() {
                 for (let i = 0; i < 100; i++) {
                     const star = document.createElement('div');
@@ -388,4 +504,3 @@
     </script>
 </body>
 </html>
-
