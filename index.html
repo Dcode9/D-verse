@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>D'Verse - Portal</title>
     <link rel="icon" href="https://raw.githubusercontent.com/Dcode9/D-verse/main/D_Ai_Logo.ico" type="image/x-icon">
     <!-- Tailwind CSS for styling -->
@@ -20,15 +20,21 @@
             --accent-red: #ff416c;
             --accent-yellow: #ffc837;
             --accent-pink: #fd1d1d;
-            --accent-purple: #9f7aea; /* Added new accent color for WebBoard */
+            --accent-purple: #9f7aea;
+            --accent-cyan: #22d3ee; /* New accent for Films */
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background-color: #121212;
             color: var(--text-primary);
-            overflow: hidden;
+            /* Mobile Fix: Allow vertical scroll, prevent horizontal scroll */
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
         }
+        
         .animated-gradient-bg {
             background: var(--bg-gradient);
             background-size: 400% 400%;
@@ -42,14 +48,35 @@
             100% { background-position: 0% 50%; }
         }
 
-        .shape {
-            position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.3; will-change: transform; z-index: 0;
+        /* Mobile Fix: Fixed position for background shapes so they don't scroll */
+        .background-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
+
+        .shape {
+            position: absolute; 
+            border-radius: 50%; 
+            filter: blur(120px); 
+            opacity: 0.3; 
+            will-change: transform; 
+        }
+        
+        /* Mobile Optimization: Reduce blur/size on small screens for performance */
+        @media (max-width: 768px) {
+            .shape { filter: blur(80px); opacity: 0.2; }
+        }
+
         .shape1 {
-            width: 400px; height: 400px; background: var(--accent-blue); top: -150px; left: -150px; animation: float 20s infinite alternate;
+            width: 400px; height: 400px; background: var(--accent-blue); top: -10%; left: -10%; animation: float 20s infinite alternate;
         }
         .shape2 {
-            width: 500px; height: 500px; background: var(--accent-red); bottom: -200px; right: -200px; animation: float 25s infinite alternate-reverse;
+            width: 500px; height: 500px; background: var(--accent-red); bottom: -10%; right: -10%; animation: float 25s infinite alternate-reverse;
         }
 
         @keyframes float {
@@ -61,6 +88,8 @@
             position: relative;
             cursor: pointer;
             border-radius: 50%;
+            /* Ensure portals don't cause overflow issues */
+            margin: 10px;
         }
 
         .portal-bubble {
@@ -74,8 +103,19 @@
             animation: rotate 25s linear infinite;
         }
         
-        .portal-wrapper:hover .portal-bubble {
-            transform: scale(1.05);
+        /* Hover effect only for non-touch devices */
+        @media (hover: hover) {
+            .portal-wrapper:hover .portal-bubble {
+                transform: scale(1.05);
+            }
+            .portal-wrapper:hover .portal-glow {
+                transform: scale(1.1);
+            }
+        }
+        
+        /* Active state for touch devices */
+        .portal-wrapper:active .portal-bubble {
+             transform: scale(0.95);
         }
 
         .portal-content {
@@ -85,50 +125,40 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 1.5rem;
             animation: counter-rotate 25s linear infinite;
+            user-select: none; /* Prevent text selection on touch */
         }
 
         .portal-glow {
             position: absolute;
             inset: -20px;
             z-index: -1;
-            /* Updated gradient to include new purple color */
-            background: conic-gradient(from var(--angle), var(--accent-blue), var(--accent-red), var(--accent-yellow), var(--accent-pink), var(--accent-purple), var(--accent-blue));
+            /* Updated gradient to include new cyan color */
+            background: conic-gradient(from var(--angle), var(--accent-blue), var(--accent-red), var(--accent-yellow), var(--accent-pink), var(--accent-purple), var(--accent-cyan), var(--accent-blue));
             background-size: 200% 200%;
             animation: 
                 spin 8s linear infinite, 
                 color-flow 12s ease-in-out infinite alternate,
                 rotate 25s linear infinite;
-            filter: blur(50px);
+            filter: blur(40px);
             opacity: 0.8;
             transition: transform 0.3s ease, border-radius 3s ease-in-out, filter 0.3s ease;
         }
         
-        #d-games-portal .portal-glow {
-            animation-delay: -4s, -6s, -12s;
-        }
-        #d-games-portal .portal-bubble {
-            animation-delay: -12s;
-        }
-         #d-games-portal .portal-content {
-            animation-delay: -12s;
-        }
+        #d-games-portal .portal-glow { animation-delay: -4s, -6s, -12s; }
+        #d-games-portal .portal-bubble { animation-delay: -12s; }
+        #d-games-portal .portal-content { animation-delay: -12s; }
 
-        /* Added animation delays for the new portal */
-        #d-webboard-portal .portal-glow {
-            animation-delay: -8s, -9s, -18s;
-        }
-        #d-webboard-portal .portal-bubble {
-            animation-delay: -18s;
-        }
-         #d-webboard-portal .portal-content {
-            animation-delay: -18s;
-        }
+        #d-webboard-portal .portal-glow { animation-delay: -8s, -9s, -18s; }
+        #d-webboard-portal .portal-bubble { animation-delay: -18s; }
+        #d-webboard-portal .portal-content { animation-delay: -18s; }
 
-        .portal-wrapper:hover .portal-glow {
-            transform: scale(1.1);
-        }
+        /* New delays for Films portal */
+        #d-films-portal .portal-glow { animation-delay: -2s, -5s, -10s; }
+        #d-films-portal .portal-bubble { animation-delay: -10s; }
+        #d-films-portal .portal-content { animation-delay: -10s; }
+
 
         @keyframes spin {
             from { --angle: 0deg; }
@@ -177,13 +207,12 @@
             to { opacity: 1; }
         }
         .glass-panel {
-            background: rgba(26, 26, 26, 0.5);
+            background: rgba(26, 26, 26, 0.65); /* Increased opacity for better visibility */
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
         
-        /* Gemini Dream Modal Styles */
         .dream-modal-overlay {
             background: rgba(0,0,0,0.7);
             backdrop-filter: blur(10px);
@@ -192,114 +221,146 @@
              background: #1e1e1e;
              border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
     </style>
 </head>
-<body class="animated-gradient-bg flex items-center justify-center min-h-screen">
-    <!-- Background Effects -->
-    <div id="space-background" class="absolute inset-0 z-0"></div>
-    <div class="absolute inset-0">
-        <div class="shape shape1"></div>
-        <div class="shape shape2"></div>
-    </div>
-
-    <!-- Sign In / User Profile -->
-    <div id="auth-container" class="absolute top-6 right-6 z-20">
-         <!-- Logged-Out State -->
-        <a id="sign-in-link" href="#" class="glass-panel text-white font-semibold py-2 px-5 rounded-lg hover:bg-white/20 transition hidden">
-            Sign in with Google
-        </a>
-        <!-- Logged-In State -->
-        <div id="user-profile" class="hidden glass-panel text-white font-semibold py-2 px-4 rounded-lg items-center gap-4">
-            <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full">
-            <div>
-                <p id="user-name" class="font-semibold"></p>
-                <p id="user-credits" class="text-sm text-gray-400"></p>
-            </div>
-            <button id="logout-btn" class="text-red-400 hover:text-red-500 transition text-sm">Logout</button>
+<body class="animated-gradient-bg">
+    
+    <!-- Fixed Background Layer -->
+    <div class="background-layer">
+        <div id="space-background" class="absolute inset-0 z-0"></div>
+        <div class="absolute inset-0">
+            <div class="shape shape1"></div>
+            <div class="shape shape2"></div>
         </div>
     </div>
 
-    <main class="relative z-10 text-center p-4">
-        <h1 class="text-5xl md:text-8xl font-extrabold mb-4">D'Verse</h1>
-        <p id="subtitle" class="text-lg md:text-xl text-gray-300 mb-12 md:mb-16">Your portal to the D'Universe.</p>
+    <!-- Sign In / User Profile -->
+    <!-- Mobile Fix: Adjusted top positioning and z-index to be clearly visible -->
+    <div id="auth-container" class="absolute top-6 right-6 md:top-8 md:right-8 z-[100] flex flex-col items-end">
+         <!-- Logged-Out State -->
+         <!-- Added explicit href and onclick for robustness -->
+        <a id="sign-in-link" href="https://authfordev.dverse.fun/login" onclick="handleLoginClick(event)" class="glass-panel text-white font-bold py-2.5 px-5 text-sm md:text-base rounded-full hover:bg-white/20 transition hidden shadow-xl active:scale-95 border-white/20">
+            Sign In
+        </a>
+        <!-- Logged-In State -->
+        <div id="user-profile" class="hidden glass-panel text-white font-semibold py-2 px-4 rounded-full flex items-center gap-3 md:gap-4 shadow-xl">
+            <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full border border-gray-400">
+            <div class="text-right">
+                <p id="user-name" class="font-semibold text-sm md:text-base"></p>
+                <p id="user-credits" class="text-xs text-gray-300"></p>
+            </div>
+            <button id="logout-btn" class="text-red-400 hover:text-red-300 transition text-xs md:text-sm ml-2 font-bold uppercase tracking-wide">Logout</button>
+        </div>
+    </div>
 
-        <div class="flex flex-col md:flex-row gap-12 md:gap-16 items-center justify-center">
+    <!-- Main Content -->
+    <!-- Mobile Fix: Added pt-24 to push content down safely below the auth button -->
+    <main class="relative z-10 text-center p-4 pt-24 md:pt-12 min-h-screen flex flex-col items-center justify-start">
+        
+        <h1 class="text-5xl md:text-8xl font-extrabold mb-2 md:mb-4 drop-shadow-2xl tracking-tight">D'Verse</h1>
+        <p id="subtitle" class="text-lg md:text-xl text-gray-200 mb-8 md:mb-16 drop-shadow-md font-medium">Your portal to the D'Universe.</p>
+
+        <div class="flex flex-col md:flex-row flex-wrap gap-8 md:gap-12 lg:gap-16 items-center justify-center w-full max-w-7xl pb-20">
             <!-- D'Ai Portal -->
-            <div data-url="https://ai.dverse.fun" id="d-ai-portal" class="portal-wrapper w-72 h-72 md:w-96 md:h-96">
+            <div data-url="https://ai.dverse.fun" id="d-ai-portal" class="portal-wrapper w-64 h-64 md:w-80 md:h-80 shrink-0">
                 <div class="portal-glow"></div>
                 <div class="portal-bubble">
                     <div class="portal-content">
-                        <svg class="w-20 h-20 md:w-24 md:h-24 mb-4 md:mb-6 text-[color:var(--accent-blue)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                        <h2 class="text-3xl md:text-4xl font-bold mb-2">D'Ai</h2>
-                        <p class="text-gray-400 text-sm md:text-base">Your intelligent chat companion.</p>
+                        <svg class="w-12 h-12 md:w-20 md:h-20 mb-4 md:mb-5 text-[color:var(--accent-blue)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        <h2 class="text-2xl md:text-3xl font-bold mb-2">D'Ai</h2>
+                        <p class="text-gray-400 text-xs md:text-sm">Intelligent Chat</p>
                     </div>
                 </div>
             </div>
             
             <!-- D'Games Portal -->
-            <div data-url="https://games.dverse.fun" id="d-games-portal" class="portal-wrapper w-72 h-72 md:w-96 md:h-96">
+            <div data-url="https://games.dverse.fun" id="d-games-portal" class="portal-wrapper w-64 h-64 md:w-80 md:h-80 shrink-0">
                 <div class="portal-glow"></div>
                 <div class="portal-bubble">
                      <div class="portal-content">
-                        <svg class="w-20 h-20 md:w-24 md:h-24 mb-4 md:mb-6 text-[color:var(--accent-red)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <svg class="w-12 h-12 md:w-20 md:h-20 mb-4 md:mb-5 text-[color:var(--accent-red)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 10.5v3m-1.5-1.5h3" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14.5 10a.5.5 0 11-1 0 .5.5 0 011 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12a.5.5 0 11-1 0 .5.5 0 011 0z" />
                         </svg>
-                        <h2 class="text-3xl md:text-4xl font-bold mb-2">D'Games</h2>
-                        <p class="text-gray-400 text-sm md:text-base">Your destination for free AAA games.</p>
+                        <h2 class="text-2xl md:text-3xl font-bold mb-2">D'Games</h2>
+                        <p class="text-gray-400 text-xs md:text-sm">Free AAA Games</p>
                     </div>
                 </div>
             </div>
 
-            <!-- NEW: D'WebBoard Portal -->
-            <div data-url="https://webboard.dverse.fun" id="d-webboard-portal" class="portal-wrapper w-72 h-72 md:w-96 md:h-96">
+            <!-- D'WebBoard Portal -->
+            <div data-url="https://webboard.dverse.fun" id="d-webboard-portal" class="portal-wrapper w-64 h-64 md:w-80 md:h-80 shrink-0">
                 <div class="portal-glow"></div>
                 <div class="portal-bubble">
                      <div class="portal-content">
-                        <!-- Corrected URL to raw image file -->
-                        <img src="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png" alt="WebBoard Logo" class="w-20 h-20 md:w-24 md:h-24 mb-4 md:mb-6">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-2">WebBoard</h2>
-                        <p class="text-gray-400 text-sm md:text-base">Your collaborative whiteboard.</p>
+                        <img src="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png" alt="WebBoard Logo" class="w-12 h-12 md:w-20 md:h-20 mb-4 md:mb-5 object-contain">
+                        <h2 class="text-2xl md:text-3xl font-bold mb-2">WebBoard</h2>
+                        <p class="text-gray-400 text-xs md:text-sm">Collaboration</p>
                     </div>
                 </div>
             </div>
 
+             <!-- NEW: D'Films Portal -->
+             <div data-url="https://films.dverse.fun" id="d-films-portal" class="portal-wrapper w-64 h-64 md:w-80 md:h-80 shrink-0">
+                <div class="portal-glow"></div>
+                <div class="portal-bubble">
+                     <div class="portal-content">
+                        <svg class="w-12 h-12 md:w-20 md:h-20 mb-4 md:mb-5 text-[color:var(--accent-cyan)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <h2 class="text-2xl md:text-3xl font-bold mb-2">D'Films</h2>
+                        <p class="text-gray-400 text-xs md:text-sm">Stream & Watch</p>
+                    </div>
+                </div>
+            </div>
         </div>
+
          <!-- ✨ Dream a Portal Button -->
-        <div id="dream-button-container" class="mt-16 text-center hidden">
-            <button id="dream-portal-btn" class="glass-panel text-white font-semibold py-3 px-6 rounded-lg hover:bg-white/20 transition-transform hover:scale-105">
+        <div id="dream-button-container" class="pb-12 text-center hidden">
+            <button id="dream-portal-btn" class="glass-panel text-white font-semibold py-3 px-6 rounded-lg hover:bg-white/20 transition-transform hover:scale-105 active:scale-95 shadow-lg border-accent-blue">
                 ✨ Dream a Portal
             </button>
         </div>
     </main>
     
     <!-- Gemini Dream Modal -->
-    <div id="dream-modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 dream-modal-overlay hidden">
+    <div id="dream-modal-overlay" class="fixed inset-0 z-[60] flex items-center justify-center p-4 dream-modal-overlay hidden">
         <div id="dream-modal-content" class="dream-modal-content rounded-2xl shadow-2xl p-6 w-full max-w-md relative">
-            <button id="close-dream-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+            <button id="close-dream-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
             <h2 class="text-2xl font-bold mb-4">Dream a New Portal</h2>
             <div id="dream-form">
                 <p class="text-gray-400 mb-4">Describe an idea for a new D'Verse portal. What would it do?</p>
                 <textarea id="dream-input" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-white focus:ring-2 focus:ring-accent-blue focus:outline-none" placeholder="e.g., A portal to create AI-generated music..."></textarea>
-                <button id="generate-dream-btn" class="w-full mt-4 bg-accent-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition">
+                <button id="generate-dream-btn" class="w-full mt-4 bg-accent-blue text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition active:scale-95">
                     Generate Idea
                 </button>
             </div>
-            <div id="dream-results" class="hidden">
+            <div id="dream-results" class="hidden overflow-y-auto max-h-[60vh]">
                  <!-- Results will be injected here -->
             </div>
              <div id="dream-loading" class="hidden text-center py-8">
-                <p class="text-gray-400">Dreaming up your idea...</p>
+                <p class="text-gray-400 animate-pulse">Dreaming up your idea...</p>
             </div>
         </div>
     </div>
     
     <script>
+        // Robust Login Handler
+        function handleLoginClick(e) {
+            // If href is default or empty, use fallback
+            const link = document.getElementById('sign-in-link');
+            if (link.getAttribute('href') === '#' || !link.getAttribute('href')) {
+                e.preventDefault();
+                const currentUrl = window.location.href.split('?')[0];
+                window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(currentUrl)}`;
+            }
+            // Otherwise allow default behavior (which uses the href set by checkAuthStatus)
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const portals = document.querySelectorAll('.portal-wrapper');
             const spaceBackground = document.getElementById('space-background');
@@ -340,14 +401,17 @@
             // --- Authentication Logic ---
             async function checkAuthStatus() {
                 const sessionToken = getCookie('dverseSessionToken');
+                
+                // Calculate redirect URL once
+                const redirectUrl = window.location.href.split('?')[0];
+                const loginUrl = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
 
                 if (!sessionToken) {
                     // --- LOGGED OUT STATE ---
                     signInLink.classList.remove('hidden');
+                    signInLink.href = loginUrl; // Set href for direct navigation
                     userProfile.classList.add('hidden');
                     dreamButtonContainer.classList.add('hidden');
-                    const redirectUrl = window.location.href.split('?')[0];
-                    signInLink.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
                     subtitle.textContent = "Your portal to the D'Universe.";
 
                 } else {
@@ -368,6 +432,7 @@
                         userProfile.classList.remove('hidden');
                         dreamButtonContainer.classList.remove('hidden');
 
+                        // Truncate name on very small screens if needed
                         userName.textContent = userData.name;
                         userCredits.textContent = `Credits: ${userData.credits}`;
                         userAvatar.src = userData.avatarUrl;
@@ -377,21 +442,26 @@
 
                     } catch (error) {
                         console.error("Failed to fetch user data:", error);
-                        logout();
+                        // Fallback to logged out state if fetch fails but don't delete cookie immediately
+                        // just in case of network error
+                        signInLink.classList.remove('hidden');
+                        signInLink.href = loginUrl;
+                        userProfile.classList.add('hidden');
                     }
                 }
             }
 
             function logout() {
                 eraseCookie('dverseSessionToken');
-                checkAuthStatus(); // Re-run the check to update the UI
+                // Reload page to clear state
+                window.location.reload();
             }
 
             // --- Handle Incoming Sign-In Requests ---
             const urlParams = new URLSearchParams(window.location.search);
-            const redirectUrl = urlParams.get('redirect_url');
-            if (redirectUrl) {
-                window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
+            const redirectUrlParam = urlParams.get('redirect_url');
+            if (redirectUrlParam) {
+                window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrlParam)}`;
             } else {
                 checkAuthStatus();
             }
@@ -431,20 +501,24 @@
                     const idea = await response.json();
 
                     dreamResults.innerHTML = `
-                        <h3 class="text-xl font-bold text-accent-blue">${idea.portalName}</h3>
+                        <h3 class="text-xl font-bold text-accent-blue mt-2">${idea.portalName}</h3>
                         <p class="text-gray-300 italic mb-2">"${idea.tagline}"</p>
-                        <p class="text-gray-400 mb-4">${idea.description}</p>
+                        <p class="text-gray-400 mb-4 text-sm">${idea.description}</p>
                         <div class="bg-gray-800 p-3 rounded-lg">
                             <p class="text-xs text-gray-500 font-mono mb-1">ICON IDEA</p>
-                            <p class="text-gray-300">${idea.iconPrompt}</p>
+                            <p class="text-gray-300 text-sm">${idea.iconPrompt}</p>
                         </div>
+                        <button onclick="document.getElementById('dream-modal-overlay').classList.add('hidden')" class="w-full mt-6 border border-gray-600 text-gray-300 py-2 rounded hover:bg-gray-800 transition">Close</button>
                     `;
                     dreamLoading.classList.add('hidden');
                     dreamResults.classList.remove('hidden');
 
                 } catch (error) {
                     console.error("Dream generation failed:", error);
-                    dreamResults.innerHTML = `<p class="text-red-400">Sorry, something went wrong while dreaming up your idea.</p>`;
+                    dreamResults.innerHTML = `
+                        <p class="text-red-400 mb-4">Sorry, something went wrong while dreaming up your idea.</p>
+                        <button onclick="document.getElementById('dream-modal-overlay').classList.add('hidden')" class="w-full border border-gray-600 text-gray-300 py-2 rounded hover:bg-gray-800 transition">Close</button>
+                    `;
                     dreamLoading.classList.add('hidden');
                     dreamResults.classList.remove('hidden');
                 }
