@@ -5,227 +5,229 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>D'Verse - Portal</title>
     <link rel="icon" href="https://raw.githubusercontent.com/Dcode9/D-verse/main/D_Ai_Logo.ico" type="image/x-icon">
-    <!-- Tailwind CSS for styling -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* CSS Variables for Theming */
         :root {
             --bg-gradient: linear-gradient(135deg, #434343, #000000);
-            --text-primary: #f9fafb; /* gray-50 */
+            --text-primary: #f9fafb;
             --accent-blue: #6a82fb;
             --accent-red: #ff416c;
             --accent-yellow: #ffc837;
             --accent-pink: #fd1d1d;
             --accent-purple: #9f7aea;
-            --accent-cyan: #22d3ee; /* New accent for Films */
+            --accent-cyan: #22d3ee;
+        }
+
+        /* --- GLOBAL SCROLLBAR HIDING (Invisible Scrollbar) --- */
+        ::-webkit-scrollbar {
+            width: 0px;
+            height: 0px;
+            background: transparent;
+        }
+        html {
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE */
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background-color: #121212;
             color: var(--text-primary);
-            /* Mobile Fix: Allow vertical scroll, prevent horizontal scroll */
-            overflow-x: hidden;
-            overflow-y: auto;
-            min-height: 100vh;
-            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
-        
+
         .animated-gradient-bg {
             background: var(--bg-gradient);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
             transition: filter 0.5s ease;
         }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Mobile Fix: Fixed position for background shapes so they don't scroll */
+        /* Fixed Background */
         .background-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .shape {
-            position: absolute; 
-            border-radius: 50%; 
-            filter: blur(120px); 
-            opacity: 0.3; 
-            will-change: transform; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
         }
         
-        /* Mobile Optimization: Reduce blur/size on small screens for performance */
+        .shape { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.3; will-change: transform; }
+        .shape1 { width: 400px; height: 400px; background: var(--accent-blue); top: -10%; left: -10%; animation: float 20s infinite alternate; }
+        .shape2 { width: 500px; height: 500px; background: var(--accent-red); bottom: -10%; right: -10%; animation: float 25s infinite alternate-reverse; }
+        @keyframes float { from { transform: translateY(0) translateX(0) rotate(0deg); } to { transform: translateY(50px) translateX(70px) rotate(180deg); } }
+
+        /* --- DESKTOP LAYOUT (Side Scroll) --- */
+        @media (min-width: 769px) {
+            body {
+                height: 350vh; /* Make page tall to allow scrolling */
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            
+            main {
+                position: fixed; /* Fix the view */
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                overflow: hidden; /* Hide the overflow */
+                padding-left: 10vw; /* Start offset */
+            }
+
+            #horizontal-track {
+                display: flex;
+                align-items: center;
+                gap: 6rem; /* Spacing between items */
+                will-change: transform;
+            }
+
+            #auth-container {
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+            }
+        }
+
+        /* --- MOBILE LAYOUT (Vertical Stack) --- */
         @media (max-width: 768px) {
-            .shape { filter: blur(80px); opacity: 0.2; }
+            body {
+                height: auto;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            
+            main {
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding-top: 120px; /* Clear auth button */
+                padding-bottom: 50px;
+                width: 100%;
+            }
+
+            #horizontal-track {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 3rem;
+                width: 100%;
+            }
+
+            #auth-container {
+                position: absolute;
+                top: 1.5rem;
+                right: 1.5rem;
+            }
+
+            /* Mobile Performance & Transparency Fixes */
+            .shape { animation: none; opacity: 0.2; }
+            .portal-glow { filter: blur(30px); opacity: 0.6; }
+            
+            /* Semi-transparent, NO BLUR */
+            .glass-panel, .portal-bubble, .dream-modal-content {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                background: rgba(20, 20, 20, 0.75) !important; /* Semi-transparent dark */
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
         }
 
-        .shape1 {
-            width: 400px; height: 400px; background: var(--accent-blue); top: -10%; left: -10%; animation: float 20s infinite alternate;
-        }
-        .shape2 {
-            width: 500px; height: 500px; background: var(--accent-red); bottom: -10%; right: -10%; animation: float 25s infinite alternate-reverse;
-        }
-
-        @keyframes float {
-            from { transform: translateY(0) translateX(0) rotate(0deg); }
-            to { transform: translateY(50px) translateX(70px) rotate(180deg); }
-        }
-
+        /* --- PORTAL COMPONENTS --- */
         .portal-wrapper {
             position: relative;
             cursor: pointer;
-            border-radius: 50%;
-            /* Ensure portals don't cause overflow issues */
-            margin: 10px;
+            width: 300px; height: 300px; /* Base size */
+            flex-shrink: 0;
         }
 
+        /* The rotating sphere */
         .portal-bubble {
             position: absolute;
             inset: 0;
-            background: rgba(26, 26, 26, 0.5);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s ease, border-radius 3s ease-in-out;
+            border-radius: 50%;
+            /* Desktop Blur default */
+            background: rgba(26, 26, 26, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: transform 0.3s ease;
             animation: rotate 25s linear infinite;
+            overflow: hidden;
+            z-index: 1;
         }
-        
-        /* Hover effect only for non-touch devices */
-        @media (hover: hover) {
-            .portal-wrapper:hover .portal-bubble {
-                transform: scale(1.05);
-            }
-            .portal-wrapper:hover .portal-glow {
-                transform: scale(1.1);
-            }
-        }
-        
-        /* Active state for touch devices */
-        .portal-wrapper:active .portal-bubble {
-             transform: scale(0.95);
+
+        /* STATIC TAGS (Outside bubble so they don't rotate) */
+        .portal-tag {
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #000;
+            z-index: 10; /* Above bubble */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transform: rotate(10deg); /* Fixed tilt */
+            pointer-events: none;
+            letter-spacing: 0.05em;
         }
 
         .portal-content {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-            animation: counter-rotate 25s linear infinite;
-            user-select: none; /* Prevent text selection on touch */
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            animation: counter-rotate 25s linear infinite; /* Counteracts bubble rotation */
         }
 
         .portal-glow {
-            position: absolute;
-            inset: -20px;
-            z-index: -1;
-            /* Updated gradient to include new cyan color */
-            background: conic-gradient(from var(--angle), var(--accent-blue), var(--accent-red), var(--accent-yellow), var(--accent-pink), var(--accent-purple), var(--accent-cyan), var(--accent-blue));
+            position: absolute; inset: -25px; z-index: 0;
+            background: conic-gradient(from var(--angle), var(--accent-blue), var(--accent-red), var(--accent-yellow), var(--accent-pink), var(--accent-blue));
             background-size: 200% 200%;
-            animation: 
-                spin 8s linear infinite, 
-                color-flow 12s ease-in-out infinite alternate,
-                rotate 25s linear infinite;
-            filter: blur(40px);
-            opacity: 0.8;
-            transition: transform 0.3s ease, border-radius 3s ease-in-out, filter 0.3s ease;
+            animation: spin 8s linear infinite, color-flow 12s ease-in-out infinite alternate, rotate 25s linear infinite;
+            filter: blur(50px); opacity: 0.7;
         }
         
-        #d-games-portal .portal-glow { animation-delay: -4s, -6s, -12s; }
-        #d-games-portal .portal-bubble { animation-delay: -12s; }
-        #d-games-portal .portal-content { animation-delay: -12s; }
+        /* Animation Keyframes */
+        @keyframes spin { from { --angle: 0deg; } to { --angle: 360deg; } }
+        @keyframes color-flow { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes counter-rotate { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        
+        .portal-opening { animation: openPortal 0.8s forwards cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes openPortal { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
 
-        #d-webboard-portal .portal-glow { animation-delay: -8s, -9s, -18s; }
-        #d-webboard-portal .portal-bubble { animation-delay: -18s; }
-        #d-webboard-portal .portal-content { animation-delay: -18s; }
-
-        /* New delays for Films portal */
+        /* Individual Glow Timings */
         #d-films-portal .portal-glow { animation-delay: -2s, -5s, -10s; }
-        #d-films-portal .portal-bubble { animation-delay: -10s; }
-        #d-films-portal .portal-content { animation-delay: -10s; }
+        #d-webboard-portal .portal-glow { animation-delay: -8s, -9s, -18s; }
+        #d-ai-portal .portal-glow { animation-delay: -1s, -3s, -7s; }
+        #d-games-portal .portal-glow { animation-delay: -4s, -6s, -12s; }
 
-
-        @keyframes spin {
-            from { --angle: 0deg; }
-            to { --angle: 360deg; }
-        }
-
-        @keyframes color-flow {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 100% 100%; }
-        }
-        
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        @keyframes counter-rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(-360deg); }
-        }
-
-        .portal-opening {
-            animation: openPortal 1s forwards cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        @keyframes openPortal {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-        body.portal-active .animated-gradient-bg {
-            filter: brightness(1.5);
-        }
-        body.portal-active main {
-            animation: fadeOutMain 0.5s forwards;
-        }
-        @keyframes fadeOutMain {
-            to { opacity: 0; }
-        }
-
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle 2s infinite alternate;
-        }
-        @keyframes twinkle {
-            from { opacity: 0.2; }
-            to { opacity: 1; }
-        }
+        /* UI Elements */
         .glass-panel {
-            background: rgba(26, 26, 26, 0.65); /* Increased opacity for better visibility */
+            background: rgba(26, 26, 26, 0.6);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 2s infinite alternate; }
+        @keyframes twinkle { from { opacity: 0.2; } to { opacity: 1; } }
         
-        .dream-modal-overlay {
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px);
-        }
-        .dream-modal-content {
-             background: #1e1e1e;
-             border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        .dream-modal-overlay { background: rgba(0,0,0,0.85); z-index: 200; }
     </style>
 </head>
 <body class="animated-gradient-bg">
     
-    <!-- Fixed Background Layer -->
+    <!-- Background -->
     <div class="background-layer">
         <div id="space-background" class="absolute inset-0 z-0"></div>
         <div class="absolute inset-0">
@@ -234,104 +236,102 @@
         </div>
     </div>
 
-    <!-- Sign In / User Profile -->
-    <!-- Mobile Fix: Adjusted top positioning and z-index to be clearly visible -->
-    <div id="auth-container" class="absolute top-6 right-6 md:top-8 md:right-8 z-[100] flex flex-col items-end">
-         <!-- Logged-Out State -->
-         <!-- Added explicit href and onclick for robustness -->
-        <a id="sign-in-link" href="https://authfordev.dverse.fun/login" onclick="handleLoginClick(event)" class="glass-panel text-white font-bold py-2.5 px-5 text-sm md:text-base rounded-full hover:bg-white/20 transition hidden shadow-xl active:scale-95 border-white/20">
+    <!-- Auth (Fixed Position) -->
+    <div id="auth-container" class="z-50 flex flex-col items-end">
+        <a id="sign-in-link" href="https://authfordev.dverse.fun/login" onclick="handleLoginClick(event)" class="glass-panel text-white font-bold py-2.5 px-5 rounded-full hover:bg-white/20 transition hidden shadow-xl active:scale-95">
             Sign In
         </a>
-        <!-- Logged-In State -->
-        <div id="user-profile" class="hidden glass-panel text-white font-semibold py-2 px-4 rounded-full flex items-center gap-3 md:gap-4 shadow-xl">
+        <div id="user-profile" class="hidden glass-panel text-white py-2 px-4 rounded-full flex items-center gap-3 shadow-xl">
             <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full border border-gray-400">
-            <div class="text-right">
-                <p id="user-name" class="font-semibold text-sm md:text-base"></p>
+            <div class="text-right hidden md:block">
+                <p id="user-name" class="font-semibold text-sm"></p>
                 <p id="user-credits" class="text-xs text-gray-300"></p>
             </div>
-            <button id="logout-btn" class="text-red-400 hover:text-red-300 transition text-xs md:text-sm ml-2 font-bold uppercase tracking-wide">Logout</button>
+            <button id="logout-btn" class="text-red-400 hover:text-red-300 transition text-xs ml-1 font-bold uppercase">LOGOUT</button>
         </div>
     </div>
 
     <!-- Main Content -->
-    <!-- Mobile Fix: Added pt-24 to push content down safely below the auth button -->
-    <main class="relative z-10 text-center p-4 pt-24 md:pt-12 min-h-screen flex flex-col items-center justify-start">
-        
-        <h1 class="text-5xl md:text-8xl font-extrabold mb-2 md:mb-4 drop-shadow-2xl tracking-tight">D'Verse</h1>
-        <p id="subtitle" class="text-lg md:text-xl text-gray-200 mb-8 md:mb-16 drop-shadow-md font-medium">Your portal to the D'Universe.</p>
+    <main class="z-10">
+        <!-- Horizontal Track (Desktop) / Vertical Stack (Mobile) -->
+        <div id="horizontal-track">
+            
+            <!-- Title Section -->
+            <div class="text-center md:text-left md:pr-12 shrink-0">
+                <h1 class="text-5xl md:text-8xl font-extrabold mb-2 drop-shadow-2xl tracking-tight">D'Verse</h1>
+                <p class="text-lg md:text-xl text-gray-300 font-medium">Your portal to the D'Universe.</p>
+            </div>
 
-        <div class="flex flex-col md:flex-row flex-wrap gap-8 md:gap-12 lg:gap-16 items-center justify-center w-full max-w-7xl pb-20">
-            <!-- D'Ai Portal -->
-            <div data-url="https://ai.dverse.fun" id="d-ai-portal" class="portal-wrapper w-64 h-64 md:w-80 md:h-80 shrink-0">
+            <!-- 1. D'Films (Cyan) -->
+            <div data-url="https://films.dverse.fun" id="d-films-portal" class="portal-wrapper">
+                <div class="portal-tag bg-[var(--accent-cyan)]">Preview</div> <!-- Static Tag -->
+                <div class="portal-glow"></div>
+                <div class="portal-bubble">
+                     <div class="portal-content">
+                        <svg class="w-16 h-16 text-[color:var(--accent-cyan)] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        <h2 class="text-3xl font-bold mb-1">D'Films</h2>
+                        <p class="text-gray-400 text-sm">Stream & Watch</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. WebBoard (Purple) -->
+            <div data-url="https://webboard.dverse.fun" id="d-webboard-portal" class="portal-wrapper">
+                <div class="portal-tag bg-[var(--accent-purple)]">New</div> <!-- Static Tag -->
+                <div class="portal-glow"></div>
+                <div class="portal-bubble">
+                     <div class="portal-content">
+                        <img src="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png" alt="WebBoard Logo" class="w-16 h-16 mb-4 object-contain">
+                        <h2 class="text-3xl font-bold mb-1">WebBoard</h2>
+                        <p class="text-gray-400 text-sm">Collaboration</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. D'Ai (Blue) -->
+            <div data-url="https://ai.dverse.fun" id="d-ai-portal" class="portal-wrapper">
                 <div class="portal-glow"></div>
                 <div class="portal-bubble">
                     <div class="portal-content">
-                        <svg class="w-12 h-12 md:w-20 md:h-20 mb-4 md:mb-5 text-[color:var(--accent-blue)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                        <h2 class="text-2xl md:text-3xl font-bold mb-2">D'Ai</h2>
-                        <p class="text-gray-400 text-xs md:text-sm">Intelligent Chat</p>
+                        <svg class="w-16 h-16 text-[color:var(--accent-blue)] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        <h2 class="text-3xl font-bold mb-1">D'Ai</h2>
+                        <p class="text-gray-400 text-sm">Intelligent Chat</p>
                     </div>
                 </div>
             </div>
             
-            <!-- D'Games Portal -->
-            <div data-url="https://games.dverse.fun" id="d-games-portal" class="portal-wrapper w-64 h-64 md:w-80 md:h-80 shrink-0">
+            <!-- 4. D'Games (Red) -->
+            <div data-url="https://games.dverse.fun" id="d-games-portal" class="portal-wrapper">
                 <div class="portal-glow"></div>
                 <div class="portal-bubble">
                      <div class="portal-content">
-                        <svg class="w-12 h-12 md:w-20 md:h-20 mb-4 md:mb-5 text-[color:var(--accent-red)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg class="w-16 h-16 text-[color:var(--accent-red)] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 10.5v3m-1.5-1.5h3" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14.5 10a.5.5 0 11-1 0 .5.5 0 011 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12a.5.5 0 11-1 0 .5.5 0 011 0z" />
                         </svg>
-                        <h2 class="text-2xl md:text-3xl font-bold mb-2">D'Games</h2>
-                        <p class="text-gray-400 text-xs md:text-sm">Free AAA Games</p>
+                        <h2 class="text-3xl font-bold mb-1">D'Games</h2>
+                        <p class="text-gray-400 text-sm">Free AAA Games</p>
                     </div>
                 </div>
             </div>
 
-            <!-- D'WebBoard Portal -->
-            <div data-url="https://webboard.dverse.fun" id="d-webboard-portal" class="portal-wrapper w-64 h-64 md:w-80 md:h-80 shrink-0">
-                <div class="portal-glow"></div>
-                <div class="portal-bubble">
-                     <div class="portal-content">
-                        <img src="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png" alt="WebBoard Logo" class="w-12 h-12 md:w-20 md:h-20 mb-4 md:mb-5 object-contain">
-                        <h2 class="text-2xl md:text-3xl font-bold mb-2">WebBoard</h2>
-                        <p class="text-gray-400 text-xs md:text-sm">Collaboration</p>
-                    </div>
-                </div>
+             <!-- Dream Button (Part of Scroll) -->
+            <div id="dream-button-container" class="shrink-0 pl-4">
+                <button id="dream-portal-btn" class="glass-panel text-white font-semibold py-4 px-8 rounded-xl hover:bg-white/20 transition-transform hover:scale-105 active:scale-95 shadow-lg border-accent-blue hidden">
+                    ✨ Dream a Portal
+                </button>
             </div>
-
-             <!-- NEW: D'Films Portal -->
-             <div data-url="https://films.dverse.fun" id="d-films-portal" class="portal-wrapper w-64 h-64 md:w-80 md:h-80 shrink-0">
-                <div class="portal-glow"></div>
-                <div class="portal-bubble">
-                     <div class="portal-content">
-                        <svg class="w-12 h-12 md:w-20 md:h-20 mb-4 md:mb-5 text-[color:var(--accent-cyan)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                        <h2 class="text-2xl md:text-3xl font-bold mb-2">D'Films</h2>
-                        <p class="text-gray-400 text-xs md:text-sm">Stream & Watch</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-         <!-- ✨ Dream a Portal Button -->
-        <div id="dream-button-container" class="pb-12 text-center hidden">
-            <button id="dream-portal-btn" class="glass-panel text-white font-semibold py-3 px-6 rounded-lg hover:bg-white/20 transition-transform hover:scale-105 active:scale-95 shadow-lg border-accent-blue">
-                ✨ Dream a Portal
-            </button>
         </div>
     </main>
     
     <!-- Gemini Dream Modal -->
-    <div id="dream-modal-overlay" class="fixed inset-0 z-[60] flex items-center justify-center p-4 dream-modal-overlay hidden">
+    <div id="dream-modal-overlay" class="fixed inset-0 flex items-center justify-center p-4 dream-modal-overlay hidden">
         <div id="dream-modal-content" class="dream-modal-content rounded-2xl shadow-2xl p-6 w-full max-w-md relative">
             <button id="close-dream-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
-            <h2 class="text-2xl font-bold mb-4">Dream a New Portal</h2>
+            <h2 class="text-2xl font-bold mb-4 text-white">Dream a New Portal</h2>
             <div id="dream-form">
                 <p class="text-gray-400 mb-4">Describe an idea for a new D'Verse portal. What would it do?</p>
                 <textarea id="dream-input" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-white focus:ring-2 focus:ring-accent-blue focus:outline-none" placeholder="e.g., A portal to create AI-generated music..."></textarea>
@@ -339,9 +339,7 @@
                     Generate Idea
                 </button>
             </div>
-            <div id="dream-results" class="hidden overflow-y-auto max-h-[60vh]">
-                 <!-- Results will be injected here -->
-            </div>
+            <div id="dream-results" class="hidden overflow-y-auto max-h-[60vh]"></div>
              <div id="dream-loading" class="hidden text-center py-8">
                 <p class="text-gray-400 animate-pulse">Dreaming up your idea...</p>
             </div>
@@ -349,32 +347,61 @@
     </div>
     
     <script>
-        // Robust Login Handler
+        // --- Desktop Side-Scroll Logic ---
+        const track = document.getElementById('horizontal-track');
+        
+        window.addEventListener('scroll', () => {
+            // Only enable the transform effect on desktop (>768px)
+            if (window.innerWidth > 768) {
+                // Calculate percentage of vertical scroll
+                const maxScroll = document.body.scrollHeight - window.innerHeight;
+                const percentage = window.scrollY / maxScroll;
+                
+                // Calculate how far to move left
+                // We want to scroll the width of the track minus the window width (plus some padding)
+                const trackWidth = track.scrollWidth;
+                const windowWidth = window.innerWidth;
+                const moveAmount = (trackWidth - windowWidth + 100) * percentage;
+                
+                // Apply transform
+                track.style.transform = `translateX(-${moveAmount}px)`;
+            } else {
+                // Reset on mobile
+                track.style.transform = 'none';
+            }
+        });
+
+        // --- Helper Functions ---
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        function eraseCookie(name) {   
+            document.cookie = `${name}=; Max-Age=-99999999; path=/; domain=.dverse.fun`;  
+        }
         function handleLoginClick(e) {
-            // If href is default or empty, use fallback
             const link = document.getElementById('sign-in-link');
             if (link.getAttribute('href') === '#' || !link.getAttribute('href')) {
                 e.preventDefault();
                 const currentUrl = window.location.href.split('?')[0];
                 window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(currentUrl)}`;
             }
-            // Otherwise allow default behavior (which uses the href set by checkAuthStatus)
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Elements
             const portals = document.querySelectorAll('.portal-wrapper');
             const spaceBackground = document.getElementById('space-background');
-            const subtitle = document.getElementById('subtitle');
-            // Auth elements
-            const authContainer = document.getElementById('auth-container');
             const signInLink = document.getElementById('sign-in-link');
             const userProfile = document.getElementById('user-profile');
             const userAvatar = document.getElementById('user-avatar');
             const userName = document.getElementById('user-name');
             const userCredits = document.getElementById('user-credits');
             const logoutBtn = document.getElementById('logout-btn');
-
-            // Gemini Dream elements
+            
+            // Gemini Elements
             const dreamButtonContainer = document.getElementById('dream-button-container');
             const dreamPortalBtn = document.getElementById('dream-portal-btn');
             const dreamModalOverlay = document.getElementById('dream-modal-overlay');
@@ -385,67 +412,55 @@
             const dreamResults = document.getElementById('dream-results');
             const dreamLoading = document.getElementById('dream-loading');
 
+            // --- Auth Logic ---
+            let retryCount = 0;
+            const MAX_RETRIES = 2;
 
-            // --- Cookie Helper Functions ---
-            function getCookie(name) {
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; ${name}=`);
-                if (parts.length === 2) return parts.pop().split(';').shift();
-                return null;
-            }
-
-            function eraseCookie(name) {   
-                document.cookie = `${name}=; Max-Age=-99999999; path=/; domain=.dverse.fun`;  
-            }
-
-            // --- Authentication Logic ---
             async function checkAuthStatus() {
                 const sessionToken = getCookie('dverseSessionToken');
-                
-                // Calculate redirect URL once
                 const redirectUrl = window.location.href.split('?')[0];
                 const loginUrl = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
 
                 if (!sessionToken) {
-                    // --- LOGGED OUT STATE ---
-                    signInLink.classList.remove('hidden');
-                    signInLink.href = loginUrl; // Set href for direct navigation
-                    userProfile.classList.add('hidden');
-                    dreamButtonContainer.classList.add('hidden');
-                    subtitle.textContent = "Your portal to the D'Universe.";
-
+                    showLoggedOut(loginUrl);
                 } else {
-                    // --- LOGGED IN STATE ---
-                    try {
-                        const response = await fetch('https://authfordev.dverse.fun/api/user', {
-                            credentials: 'include'
-                        });
+                    await fetchUserData();
+                }
+            }
 
-                        if (!response.ok) {
-                            console.error("Auth token is invalid, signing out.");
-                            return logout();
-                        }
+            function showLoggedOut(loginUrl) {
+                signInLink.classList.remove('hidden');
+                signInLink.href = loginUrl;
+                userProfile.classList.add('hidden');
+                dreamPortalBtn.classList.add('hidden'); 
+            }
 
-                        const userData = await response.json();
-                        
-                        signInLink.classList.add('hidden');
-                        userProfile.classList.remove('hidden');
-                        dreamButtonContainer.classList.remove('hidden');
+            async function fetchUserData() {
+                try {
+                    const response = await fetch('https://authfordev.dverse.fun/api/user', { credentials: 'include' });
+                    if (!response.ok) {
+                        if (response.status === 401) return logout();
+                        throw new Error(`Server error: ${response.status}`);
+                    }
 
-                        // Truncate name on very small screens if needed
-                        userName.textContent = userData.name;
-                        userCredits.textContent = `Credits: ${userData.credits}`;
-                        userAvatar.src = userData.avatarUrl;
-                        
-                        subtitle.textContent = `Welcome, ${userData.name}`;
-                        logoutBtn.addEventListener('click', logout);
+                    const userData = await response.json();
+                    
+                    signInLink.classList.add('hidden');
+                    userProfile.classList.remove('hidden');
+                    dreamPortalBtn.classList.remove('hidden');
 
-                    } catch (error) {
-                        console.error("Failed to fetch user data:", error);
-                        // Fallback to logged out state if fetch fails but don't delete cookie immediately
-                        // just in case of network error
+                    userName.textContent = userData.name;
+                    userCredits.textContent = `${userData.credits} CR`;
+                    userAvatar.src = userData.avatarUrl;
+                    logoutBtn.addEventListener('click', logout);
+
+                } catch (error) {
+                    console.error("Auth fetch failed:", error);
+                    if (retryCount < MAX_RETRIES) {
+                        retryCount++;
+                        setTimeout(fetchUserData, 1000);
+                    } else {
                         signInLink.classList.remove('hidden');
-                        signInLink.href = loginUrl;
                         userProfile.classList.add('hidden');
                     }
                 }
@@ -453,20 +468,18 @@
 
             function logout() {
                 eraseCookie('dverseSessionToken');
-                // Reload page to clear state
                 window.location.reload();
             }
 
-            // --- Handle Incoming Sign-In Requests ---
+            // Check Auth on Load
             const urlParams = new URLSearchParams(window.location.search);
-            const redirectUrlParam = urlParams.get('redirect_url');
-            if (redirectUrlParam) {
-                window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrlParam)}`;
+            if (urlParams.get('redirect_url')) {
+                window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(urlParams.get('redirect_url'))}`;
             } else {
                 checkAuthStatus();
             }
 
-            // --- Gemini Dream Logic ---
+            // --- Gemini Dream Handlers ---
             dreamPortalBtn.addEventListener('click', () => {
                 dreamModalOverlay.classList.remove('hidden');
                 dreamForm.classList.remove('hidden');
@@ -474,32 +487,22 @@
                 dreamLoading.classList.add('hidden');
                 dreamInput.value = '';
             });
-
-            closeDreamModalBtn.addEventListener('click', () => {
-                dreamModalOverlay.classList.add('hidden');
-            });
+            closeDreamModalBtn.addEventListener('click', () => { dreamModalOverlay.classList.add('hidden'); });
 
             generateDreamBtn.addEventListener('click', async () => {
                 const prompt = dreamInput.value.trim();
                 if (!prompt) return;
-
                 dreamForm.classList.add('hidden');
                 dreamLoading.classList.remove('hidden');
-
                 try {
                     const response = await fetch('https://authfordev.dverse.fun/api/dream', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include', // Sends login cookie
+                        credentials: 'include',
                         body: JSON.stringify({ prompt: prompt })
                     });
-
-                    if (!response.ok) {
-                        throw new Error('Failed to generate idea from the server.');
-                    }
-
+                    if (!response.ok) throw new Error('Server error');
                     const idea = await response.json();
-
                     dreamResults.innerHTML = `
                         <h3 class="text-xl font-bold text-accent-blue mt-2">${idea.portalName}</h3>
                         <p class="text-gray-300 italic mb-2">"${idea.tagline}"</p>
@@ -512,56 +515,42 @@
                     `;
                     dreamLoading.classList.add('hidden');
                     dreamResults.classList.remove('hidden');
-
                 } catch (error) {
-                    console.error("Dream generation failed:", error);
-                    dreamResults.innerHTML = `
-                        <p class="text-red-400 mb-4">Sorry, something went wrong while dreaming up your idea.</p>
-                        <button onclick="document.getElementById('dream-modal-overlay').classList.add('hidden')" class="w-full border border-gray-600 text-gray-300 py-2 rounded hover:bg-gray-800 transition">Close</button>
-                    `;
+                    dreamResults.innerHTML = `<p class="text-red-400 mb-4">Error dreaming idea.</p><button onclick="document.getElementById('dream-modal-overlay').classList.add('hidden')" class="w-full border border-gray-600 text-gray-300 py-2 rounded hover:bg-gray-800 transition">Close</button>`;
                     dreamLoading.classList.add('hidden');
                     dreamResults.classList.remove('hidden');
                 }
             });
 
-            // --- Portal Animations ---
-            function getRandomVal(min, max) {
-                return Math.floor(Math.random() * (max - min + 1) + min);
-            }
+            // --- Animation Logic ---
+            function getRandomVal(min, max) { return Math.floor(Math.random() * (max - min + 1) + min); }
             function generateBorderRadius() {
                 const vals = Array(8).fill(0).map(() => getRandomVal(40, 60));
                 return `${vals[0]}% ${vals[1]}% ${vals[2]}% ${vals[3]}% / ${vals[4]}% ${vals[5]}% ${vals[6]}% ${vals[7]}%`;
             }
             function animatePortal(portal) {
+                if (window.innerWidth < 768) return; 
                 const bubble = portal.querySelector('.portal-bubble');
-                const glow = portal.querySelector('.portal-glow');
-                const newBorderRadius = generateBorderRadius();
-                bubble.style.borderRadius = newBorderRadius;
-                glow.style.borderRadius = newBorderRadius;
-                const randomInterval = getRandomVal(3000, 5000);
-                setTimeout(() => animatePortal(portal), randomInterval);
+                if(bubble) bubble.style.borderRadius = generateBorderRadius();
+                setTimeout(() => animatePortal(portal), getRandomVal(3000, 5000));
             }
+            
             portals.forEach(portal => {
-                const initialBorderRadius = generateBorderRadius();
-                portal.querySelector('.portal-bubble').style.borderRadius = initialBorderRadius;
-                portal.querySelector('.portal-glow').style.borderRadius = initialBorderRadius;
+                const bubble = portal.querySelector('.portal-bubble');
+                if(bubble) bubble.style.borderRadius = generateBorderRadius();
                 animatePortal(portal);
-            });
-            portals.forEach(portal => {
                 portal.addEventListener('click', (e) => {
                     e.preventDefault();
                     if (document.body.classList.contains('portal-active')) return;
                     document.body.classList.add('portal-active');
                     portal.classList.add('portal-opening');
-                    setTimeout(() => {
-                        window.location.href = portal.dataset.url;
-                    }, 1000);
+                    setTimeout(() => { window.location.href = portal.dataset.url; }, 800);
                 });
             });
 
-            // --- Starfield Generation ---
             function createStars() {
-                for (let i = 0; i < 100; i++) {
+                const count = window.innerWidth < 768 ? 30 : 100;
+                for (let i = 0; i < count; i++) {
                     const star = document.createElement('div');
                     star.classList.add('star');
                     const size = Math.random() * 2 + 1;
