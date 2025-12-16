@@ -20,6 +20,7 @@
             --accent-purple: #9f7aea;
             --accent-blue: #6a82fb;
             --accent-red: #ff416c;
+            --accent-orange: #f59e0b;
         }
 
         /* --- GLOBAL SCROLLBAR HIDING --- */
@@ -97,7 +98,12 @@
         .portal-canvas {
             position: absolute; inset: 0; width: 100%; height: 100%;
             border-radius: 50%; z-index: 1;
-            /* Using WebGL for visual effects now, no CSS blur needed */
+            /* Blur containment inside the sphere */
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1);
         }
 
         .portal-tag {
@@ -279,7 +285,19 @@
                 </div>
             </div>
 
-            <!-- 3. D'Ai -->
+            <!-- 3. MathLab (NEW) -->
+            <div data-url="https://maths.dverse.fun" class="portal-wrapper group">
+                <canvas class="portal-canvas" data-color="1.0, 0.65, 0.0" data-seed="246"></canvas>
+                <div class="portal-content transition-transform duration-300 group-hover:scale-110">
+                    <svg class="w-20 h-20 text-white mb-4 drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    <h2 class="text-3xl font-bold mb-1 text-white">MathLab</h2>
+                    <p class="text-gray-200 text-sm font-medium">Solve & Visualize</p>
+                </div>
+            </div>
+
+            <!-- 4. D'Ai -->
             <div data-url="https://ai.dverse.fun" class="portal-wrapper group">
                 <canvas class="portal-canvas" data-color="0.41, 0.51, 0.98" data-seed="789"></canvas>
                 <div class="portal-content transition-transform duration-300 group-hover:scale-110">
@@ -289,7 +307,7 @@
                 </div>
             </div>
             
-            <!-- 4. D'Games -->
+            <!-- 5. D'Games -->
             <div data-url="https://games.dverse.fun" class="portal-wrapper group">
                 <canvas class="portal-canvas" data-color="1.0, 0.25, 0.42" data-seed="321"></canvas>
                 <div class="portal-content transition-transform duration-300 group-hover:scale-110">
@@ -428,7 +446,8 @@
             float d = 0.0;
             bool hit = false;
             
-            for(int i = 0; i < 50; i++) {
+            // INCREASED STEPS for smoothness
+            for(int i = 0; i < 64; i++) {
                 vec3 p = ro + t * rd;
                 d = map(p);
                 if(d < 0.001) { hit = true; break; }
@@ -627,6 +646,7 @@
                 state.bgImage = bgImg;
                 state.hasTexture = true;
                 
+                // One-time upload
                 instances.forEach(inst => {
                     const gl = inst.gl;
                     const tex = gl.createTexture();
@@ -763,8 +783,12 @@
             portals.forEach(portal => {
                 portal.addEventListener('click', (e) => {
                     e.preventDefault();
+                    // FIX: Ensure we use portal.dataset.url which is on the clicked element
+                    const targetUrl = portal.dataset.url;
                     portal.classList.add('portal-opening');
-                    setTimeout(() => { window.location.href = portal.parentElement.dataset.url; }, 800);
+                    setTimeout(() => { 
+                        if(targetUrl) window.location.href = targetUrl; 
+                    }, 800);
                 });
             });
 
