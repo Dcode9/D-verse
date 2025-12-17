@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>D'Verse - Portal</title>
-    <link rel="icon" href="https://raw.githubusercontent.com/Dcode9/D-verse/4c07428cda7ce4bd9549aeeeb4b6fd0c95a7cc1c/D_Ai_Logo.ico" type="image/x-icon">
+    <link rel="icon" href="https://raw.githubusercontent.com/Dcode9/D-verse/main/D_Ai_Logo.ico" type="image/x-icon">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts & Icons -->
@@ -20,7 +20,6 @@
             --accent-purple: #9f7aea;
             --accent-blue: #6a82fb;
             --accent-red: #ff416c;
-            --accent-orange: #f59e0b;
         }
 
         /* --- GLOBAL SCROLLBAR HIDING --- */
@@ -37,23 +36,22 @@
             width: 100vw; height: 100vh;
         }
 
-        /* Background Layer */
+        /* Background Layer (LOCKED) */
         .background-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 0; pointer-events: none;
             background-size: cover; background-position: center;
             transition: background 0.5s ease;
-            background-color: #000;
         }
         
-        /* Star Field Overlay */
-        #star-layer {
+        /* Default Star Background */
+        #procedural-bg {
             position: absolute; inset: 0;
-            background: transparent;
+            background: linear-gradient(135deg, #020204, #0a0a12);
         }
 
         .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 3s infinite alternate; }
-        @keyframes twinkle { from { opacity: 0.1; } to { opacity: 0.6; } }
+        @keyframes twinkle { from { opacity: 0.1; } to { opacity: 0.8; } }
 
         /* --- LAYOUTS --- */
         main {
@@ -65,10 +63,13 @@
         @media (min-width: 769px) {
             body { overflow-y: auto; height: 350vh; } 
             main { position: fixed; top: 0; left: 0; display: flex; align-items: center; padding-left: 10vw; }
+            /* Changed align-items from flex-start to center for vertical centering */
             #horizontal-track { display: flex; align-items: center; gap: 6rem; will-change: transform; transition: transform 0.1s cubic-bezier(0.1, 0.5, 0.1, 1); }
             
             #auth-container { position: fixed; top: 2rem; right: 2rem; }
             #controls-panel { position: fixed; top: 2rem; left: 2rem; }
+            
+            /* Edit Fab Location */
             #edit-fab-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 50; }
         }
 
@@ -76,34 +77,31 @@
         @media (max-width: 768px) {
             body { height: auto; overflow-y: auto; }
             main { display: flex; flex-direction: column; align-items: center; padding-top: 150px; padding-bottom: 50px; }
-            #horizontal-track { display: flex; flex-direction: column; align-items: center; gap: 4rem; }
+            #horizontal-track { display: flex; flex-direction: column; align-items: center; gap: 5rem; }
             
             #auth-container { position: absolute; top: 1.5rem; right: 1.5rem; }
             #controls-panel { position: relative; margin-bottom: 2rem; width: 90%; order: -1; }
+            
             #edit-fab-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50; }
         }
 
-        /* --- PORTALS --- */
+        /* --- PORTAL COMPONENTS --- */
+        .portal-group {
+            display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+            position: relative;
+        }
+
         .portal-wrapper {
             position: relative; cursor: pointer;
             width: 300px; height: 300px;
             flex-shrink: 0; display: flex; justify-content: center; align-items: center;
-            transition: transform 0.3s ease;
-        }
-        
-        .portal-wrapper:hover {
-            transform: scale(1.05);
         }
 
         .portal-canvas {
             position: absolute; inset: 0; width: 100%; height: 100%;
             border-radius: 50%; z-index: 1;
-            /* Blur containment inside the sphere */
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
+            /* Efficient Blur containment */
             -webkit-mask-image: -webkit-radial-gradient(white, black);
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: inset 0 0 20px rgba(255,255,255,0.1);
         }
 
         .portal-tag {
@@ -121,13 +119,38 @@
             width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             pointer-events: none; 
-            text-shadow: 0 4px 20px rgba(0,0,0,0.9), 0 2px 5px rgba(0,0,0,0.8);
+        }
+
+        /* Blurred Label Below Sphere */
+        .glass-label {
+            background: rgba(20, 20, 20, 0.4);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px; /* Superellipse-ish rounded */
+            padding: 1rem 2rem;
+            text-align: center;
+            width: max-content;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+        
+        .portal-group:hover .glass-label {
+            transform: translateY(5px);
+            background: rgba(40, 40, 40, 0.6);
+        }
+
+        /* D'Verse Title Background */
+        .title-glass {
+            background: rgba(10, 10, 10, 0.3);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border-radius: 3rem; /* Superellipse feel */
+            padding: 2rem 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .portal-opening { animation: openPortal 0.8s forwards cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes openPortal { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
 
-        /* UI Styling */
+        /* UI Panels */
         .glass-panel {
             background: rgba(20, 20, 20, 0.6);
             backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
@@ -135,28 +158,21 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
         }
 
+        /* Sign In Button (Glass Pill) */
         .glass-pill-btn {
-            background: rgba(30, 30, 30, 0.4);
+            background: rgba(30, 30, 30, 0.3);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 0 10px rgba(255,255,255,0.05);
             transition: all 0.3s ease;
         }
         .glass-pill-btn:hover {
-            background: rgba(50, 50, 50, 0.6);
+            background: rgba(50, 50, 50, 0.5);
+            box-shadow: 0 0 25px rgba(100,100,255,0.2), inset 0 0 20px rgba(255,255,255,0.1);
             border-color: rgba(255,255,255,0.3);
         }
 
-        /* D'Verse Title Background */
-        .title-glass {
-            background: rgba(10, 10, 10, 0.4);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-radius: 3rem; 
-            padding: 2rem 3rem;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        /* Edit Icon */
+        /* Edit Icon (Circular) */
         .edit-fab {
             width: 50px; height: 50px;
             border-radius: 50%;
@@ -168,9 +184,9 @@
         }
         .edit-fab:hover { transform: scale(1.1); }
         .edit-fab canvas { position: absolute; inset: 0; z-index: 0; }
-        .edit-fab span { position: relative; z-index: 10; color: white; pointer-events: none; }
-
-        /* Sliders */
+        /* Edit Icon (Circular) - REMOVED OLD STYLES, NEW STYLES HANDLED BY GLASS-PILL-BTN CLASS */
+        
+        /* Sliders & Toggle */
         input[type=range] { -webkit-appearance: none; background: transparent; cursor: pointer; }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
@@ -187,38 +203,55 @@
 </head>
 <body>
     
-    <!-- Background Layer -->
+    <!-- Background Layer (Locked) -->
     <div class="background-layer" id="bg-layer">
-        <div id="star-layer"></div>
+        <div id="procedural-bg"></div>
     </div>
 
-    <!-- CONTROLS PANEL -->
+    <!-- CONTROLS PANEL (Top Left) -->
     <div id="controls-panel" class="glass-panel rounded-2xl p-5 w-full max-w-xs z-50 transition-all hover:bg-black/60 duration-300 hidden">
         <div class="flex items-center justify-between mb-3">
             <h1 class="text-white text-lg font-semibold tracking-tight">Optics Lab</h1>
             <button id="close-controls" class="text-white/50 hover:text-white"><span class="material-symbols-outlined">close</span></button>
         </div>
+        
         <div class="space-y-4">
+            <!-- Viscosity -->
             <div class="flex flex-col gap-1">
-                <div class="flex justify-between text-xs text-white/80 font-medium"><span>Viscosity</span><span id="warpVal">26%</span></div>
+                <div class="flex justify-between text-xs text-white/80 font-medium">
+                    <span>Viscosity</span><span id="warpVal">26%</span>
+                </div>
                 <input type="range" min="0" max="100" value="26" class="w-full" id="warpSlider">
             </div>
+            <!-- Refraction -->
              <div class="flex flex-col gap-1">
-                <div class="flex justify-between text-xs text-white/80 font-medium"><span>Refraction</span><span id="refractVal">1.11</span></div>
+                <div class="flex justify-between text-xs text-white/80 font-medium">
+                    <span>Refraction</span><span id="refractVal">1.11</span>
+                </div>
                 <input type="range" min="100" max="200" value="111" class="w-full" id="refractSlider">
             </div>
+            <!-- Bg Distance -->
             <div class="flex flex-col gap-1">
-                <div class="flex justify-between text-xs text-white/80 font-medium"><span>Bg Distance</span><span id="distVal">0.5</span></div>
+                <div class="flex justify-between text-xs text-white/80 font-medium">
+                    <span>Bg Distance</span><span id="distVal">0.5</span>
+                </div>
                 <input type="range" min="1" max="50" value="5" class="w-full" id="distSlider">
             </div>
+            <!-- Aberration -->
             <div class="flex flex-col gap-1">
-                <div class="flex justify-between text-xs text-white/80 font-medium"><span>Aberration</span><span id="aberrationVal">0.0015</span></div>
+                <div class="flex justify-between text-xs text-white/80 font-medium">
+                    <span>Aberration</span><span id="aberrationVal">0.0015</span>
+                </div>
                 <input type="range" min="0" max="100" value="15" class="w-full" id="aberrationSlider">
             </div>
+            <!-- Blur -->
             <div class="flex flex-col gap-1">
-                <div class="flex justify-between text-xs text-white/80 font-medium"><span>Blur Strength</span><span id="blurVal">0.5</span></div>
+                <div class="flex justify-between text-xs text-white/80 font-medium">
+                    <span>Blur Strength</span><span id="blurVal">0.5</span>
+                </div>
                 <input type="range" min="0" max="100" value="50" class="w-full" id="blurSlider">
             </div>
+            <!-- Flip -->
             <div class="flex items-center justify-between border-t border-white/10 pt-2">
                 <span class="text-xs text-white font-medium">Real Image (Flip)</span>
                 <div class="relative inline-block w-10 mr-2 align-middle select-none">
@@ -229,9 +262,11 @@
         </div>
     </div>
 
-    <!-- Auth Container -->
+    <!-- Auth Container (Top Right) -->
     <div id="auth-container" class="z-50 flex flex-col items-end">
-        <a id="sign-in-link" href="#" onclick="handleLoginClick(event)" class="glass-pill-btn text-white font-bold py-2.5 px-6 rounded-full text-sm tracking-wide hidden">Sign In</a>
+        <a id="sign-in-link" href="#" onclick="handleLoginClick(event)" class="glass-pill-btn text-white font-bold py-2.5 px-6 rounded-full text-sm tracking-wide hidden">
+            Sign In
+        </a>
         <div id="user-profile" class="hidden glass-pill-btn text-white py-2 px-4 rounded-full flex items-center gap-3">
             <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full border border-gray-400">
             <div class="text-right hidden md:block">
@@ -242,11 +277,11 @@
         </div>
     </div>
 
-    <!-- Edit FAB -->
+    <!-- Edit FAB (Bottom Right) -->
     <div id="edit-fab-container">
-        <label class="edit-fab group">
-            <canvas class="portal-canvas" data-color="1.0, 1.0, 1.0" data-seed="999" data-static="true"></canvas> 
-            <span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">edit</span>
+        <label class="glass-pill-btn flex items-center gap-3 px-6 py-3 rounded-full cursor-pointer hover:bg-white/10 transition-all active:scale-95 group">
+            <span class="material-symbols-outlined text-xl text-white group-hover:text-[var(--accent-cyan)] transition-colors">edit</span>
+            <span class="text-sm font-bold tracking-wide text-white uppercase">Edit Theme</span>
             <input type="file" id="bgInput" accept="image/*" class="hidden">
         </label>
     </div>
@@ -255,65 +290,85 @@
     <main>
         <div id="horizontal-track">
             
-            <!-- Title (Centered) -->
+            <!-- Title -->
             <div class="text-center md:text-left md:pr-12 shrink-0 flex justify-center md:block">
                 <div class="title-glass">
-                    <h1 class="text-5xl md:text-8xl font-extrabold mb-0 drop-shadow-2xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 cursor-pointer" id="main-title">D'Verse</h1>
-                    <p class="text-lg md:text-xl text-gray-300 font-medium tracking-wide mt-2">Your portal to the D'Universe.</p>
+                    <h1 class="text-5xl md:text-8xl font-extrabold mb-2 drop-shadow-2xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">D'Verse</h1>
+                    <p class="text-lg md:text-xl text-gray-300 font-medium tracking-wide">Your portal to the D'Universe.</p>
                 </div>
             </div>
 
             <!-- 1. D'Films -->
-            <div data-url="https://films.dverse.fun" class="portal-wrapper group">
-                <div class="portal-tag bg-[var(--accent-cyan)]">Preview</div>
-                <canvas class="portal-canvas" data-color="0.13, 0.82, 0.93" data-seed="123"></canvas>
-                <div class="portal-content transition-transform duration-300 group-hover:scale-110">
-                    <img src="https://raw.githubusercontent.com/Dcode9/D-verse/21929090af8fff20966a666b29b39590054b157b/assets/D'Films%20Logo.png" alt="D'Films Logo" class="w-24 h-24 object-cover rounded-full mb-4 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
-                    <h2 class="text-3xl font-bold mb-1 text-white">D'Films</h2>
-                    <p class="text-gray-200 text-sm font-medium">Stream & Watch</p>
+            <div data-url="https://films.dverse.fun" class="portal-group">
+                <div class="portal-wrapper group">
+                    <div class="portal-tag bg-[var(--accent-cyan)]">Preview</div>
+                    <canvas class="portal-canvas" data-color="0.13, 0.82, 0.93" data-seed="123"></canvas>
+                    <div class="portal-content transition-transform duration-300 group-hover:scale-110">
+                        <img src="https://raw.githubusercontent.com/Dcode9/D-verse/21929090af8fff20966a666b29b39590054b157b/assets/D'Films%20Logo.png" alt="D'Films Logo" class="w-24 h-24 object-cover rounded-full drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
+                    </div>
+                </div>
+                <div class="glass-label">
+                    <h2 class="text-2xl font-bold text-white">D'Films</h2>
+                    <p class="text-gray-300 text-xs uppercase tracking-wider mt-1">Stream & Watch</p>
                 </div>
             </div>
 
             <!-- 2. WebBoard -->
-            <div data-url="https://webboard.dverse.fun" class="portal-wrapper group">
-                <div class="portal-tag bg-[var(--accent-purple)]">New</div>
-                <canvas class="portal-canvas" data-color="0.62, 0.47, 0.91" data-seed="456"></canvas>
-                <div class="portal-content transition-transform duration-300 group-hover:scale-110">
-                    <img src="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png" alt="WebBoard Logo" class="w-20 h-20 mb-4 object-contain drop-shadow-[0_0_15px_rgba(159,122,234,0.8)]">
-                    <h2 class="text-3xl font-bold mb-1 text-white">WebBoard</h2>
-                    <p class="text-gray-200 text-sm font-medium">Collaboration</p>
+            <div data-url="https://webboard.dverse.fun" class="portal-group">
+                <div class="portal-wrapper group">
+                    <div class="portal-tag bg-[var(--accent-purple)]">New</div>
+                    <canvas class="portal-canvas" data-color="0.62, 0.47, 0.91" data-seed="456"></canvas>
+                    <div class="portal-content transition-transform duration-300 group-hover:scale-110">
+                        <img src="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png" alt="WebBoard Logo" class="w-24 h-24 object-contain drop-shadow-[0_0_15px_rgba(159,122,234,0.8)]">
+                    </div>
+                </div>
+                <div class="glass-label">
+                    <h2 class="text-2xl font-bold text-white">WebBoard</h2>
+                    <p class="text-gray-300 text-xs uppercase tracking-wider mt-1">Collaboration</p>
                 </div>
             </div>
 
             <!-- 3. MathLab (NEW) -->
-            <div data-url="https://maths.dverse.fun" class="portal-wrapper group">
-                <canvas class="portal-canvas" data-color="1.0, 0.65, 0.0" data-seed="246"></canvas>
-                <div class="portal-content transition-transform duration-300 group-hover:scale-110">
-                    <svg class="w-20 h-20 text-white mb-4 drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                    <h2 class="text-3xl font-bold mb-1 text-white">MathLab</h2>
-                    <p class="text-gray-200 text-sm font-medium">Solve & Visualize</p>
+            <div data-url="https://maths.dverse.fun" class="portal-group">
+                <div class="portal-wrapper group">
+                    <canvas class="portal-canvas" data-color="1.0, 0.65, 0.0" data-seed="246"></canvas>
+                    <div class="portal-content transition-transform duration-300 group-hover:scale-110">
+                        <svg class="w-24 h-24 text-white drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="glass-label">
+                    <h2 class="text-2xl font-bold text-white">MathLab</h2>
+                    <p class="text-gray-300 text-xs uppercase tracking-wider mt-1">Solve & Visualize</p>
                 </div>
             </div>
 
             <!-- 4. D'Ai -->
-            <div data-url="https://ai.dverse.fun" class="portal-wrapper group">
-                <canvas class="portal-canvas" data-color="0.41, 0.51, 0.98" data-seed="789"></canvas>
-                <div class="portal-content transition-transform duration-300 group-hover:scale-110">
-                    <img src="https://raw.githubusercontent.com/Dcode9/D-verse/4c07428cda7ce4bd9549aeeeb4b6fd0c95a7cc1c/D_Ai_Logo.ico" alt="D'Ai Logo" class="w-20 h-20 mb-4 object-contain drop-shadow-[0_0_15px_rgba(106,130,251,0.8)]">
-                    <h2 class="text-3xl font-bold mb-1 text-white">D'Ai</h2>
-                    <p class="text-gray-200 text-sm font-medium">Intelligent Chat</p>
+            <div data-url="https://ai.dverse.fun" class="portal-group">
+                <div class="portal-wrapper group">
+                    <canvas class="portal-canvas" data-color="0.41, 0.51, 0.98" data-seed="789"></canvas>
+                    <div class="portal-content transition-transform duration-300 group-hover:scale-110">
+                        <img src="https://raw.githubusercontent.com/Dcode9/D-verse/4c07428cda7ce4bd9549aeeeb4b6fd0c95a7cc1c/D_Ai_Logo.ico" alt="D'Ai Logo" class="w-24 h-24 object-contain drop-shadow-[0_0_15px_rgba(106,130,251,0.8)]">
+                    </div>
+                </div>
+                <div class="glass-label">
+                    <h2 class="text-2xl font-bold text-white">D'Ai</h2>
+                    <p class="text-gray-300 text-xs uppercase tracking-wider mt-1">Intelligent Chat</p>
                 </div>
             </div>
             
             <!-- 5. D'Games -->
-            <div data-url="https://games.dverse.fun" class="portal-wrapper group">
-                <canvas class="portal-canvas" data-color="1.0, 0.25, 0.42" data-seed="321"></canvas>
-                <div class="portal-content transition-transform duration-300 group-hover:scale-110">
-                    <svg class="w-20 h-20 text-white mb-4 drop-shadow-[0_0_15px_rgba(255,65,108,0.8)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 10.5v3m-1.5-1.5h3" /><path stroke-linecap="round" stroke-linejoin="round" d="M14.5 10a.5.5 0 11-1 0 .5.5 0 011 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12a.5.5 0 11-1 0 .5.5 0 011 0z" /></svg>
-                    <h2 class="text-3xl font-bold mb-1 text-white">D'Games</h2>
-                    <p class="text-gray-200 text-sm font-medium">Free AAA Games</p>
+            <div data-url="https://games.dverse.fun" class="portal-group">
+                <div class="portal-wrapper group">
+                    <canvas class="portal-canvas" data-color="1.0, 0.25, 0.42" data-seed="321"></canvas>
+                    <div class="portal-content transition-transform duration-300 group-hover:scale-110">
+                        <svg class="w-24 h-24 text-white drop-shadow-[0_0_15px_rgba(255,65,108,0.8)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 10.5v3m-1.5-1.5h3" /><path stroke-linecap="round" stroke-linejoin="round" d="M14.5 10a.5.5 0 11-1 0 .5.5 0 011 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12a.5.5 0 11-1 0 .5.5 0 011 0z" /></svg>
+                    </div>
+                </div>
+                <div class="glass-label">
+                    <h2 class="text-2xl font-bold text-white">D'Games</h2>
+                    <p class="text-gray-300 text-xs uppercase tracking-wider mt-1">Free AAA Games</p>
                 </div>
             </div>
 
@@ -365,7 +420,7 @@
         uniform vec2 uResolution;
         uniform float uTime;
         uniform vec3 uBaseColor;
-        uniform float uSeed;
+        uniform float uSeed; // Unique morph seed
         
         // Physics Uniforms
         uniform float uWarp;
@@ -397,12 +452,12 @@
         float map(vec3 p) {
             float d = length(p) - 1.2;
             
-            // Reverted to full Liquid Morph (Opaque-ish core feel)
-            float t = uTime * 0.8 + uSeed * 1000.0;
-            float morph = sin(p.x * 2.0 + t + uSeed * 123.4) * sin(p.y * 2.5 + t * 1.2 + uSeed * 345.6) * sin(p.z * 2.0 + t * 0.7);
+            // Unique Morphing based on uSeed
+            float t = uTime * 0.8 + uSeed * 10.0;
+            float morph = sin(p.x * 2.0 + t) * sin(p.y * 2.5 + t * 1.2) * sin(p.z * 2.0 + t * 0.7);
             
             d += morph * 0.4 * uWarp;
-            float bubbles = noise(p * 4.0 + uTime + uSeed * 50.0);
+            float bubbles = noise(p * 4.0 + uTime + uSeed);
             d += bubbles * 0.05 * uWarp;
             return d * 0.7;
         }
@@ -419,8 +474,14 @@
         }
 
         vec3 getProceduralBg(vec2 uv) {
-            // Darker fallback
-            return vec3(0.01, 0.01, 0.02);
+            float t = uTime * 0.2;
+            vec3 col = vec3(0.05, 0.05, 0.1); 
+            // Simple blobs for default
+            vec2 pos1 = vec2(sin(t)*0.4, cos(t*0.7)*0.3);
+            float d1 = length(uv - 0.5 - pos1);
+            col += vec3(0.0, 0.6, 1.0) * (1.0 / (d1 * 10.0 + 0.5)) * 0.4;
+            col = mix(col, col * 0.5, uv.y);
+            return clamp(col, 0.0, 1.0);
         }
 
         vec3 getBackgroundSample(vec2 uv) {
@@ -429,7 +490,7 @@
                 vec2 baseUV = gl_FragCoord.xy / uResolution.xy;
                 vec2 offset = uv - baseUV;
                 
-                // Use Texture LOD for Blur
+                // Use Texture LOD for Blur (Efficient)
                 return textureLod(uBgTexture, screenUV + offset, uBlurStrength * 5.0).rgb;
             } else {
                 return getProceduralBg(uv);
@@ -446,8 +507,7 @@
             float d = 0.0;
             bool hit = false;
             
-            // INCREASED STEPS for smoothness
-            for(int i = 0; i < 64; i++) {
+            for(int i = 0; i < 50; i++) {
                 vec3 p = ro + t * rd;
                 d = map(p);
                 if(d < 0.001) { hit = true; break; }
@@ -477,11 +537,10 @@
                 float fresnel = pow(1.0 + dot(rd, n), 3.0);
                 vec3 rimColor = uBaseColor * fresnel * 2.5;
 
-                // Removed specular mouse light, kept slight ambient specular
-                float spec = pow(max(dot(n, normalize(vec3(1,1,1))), 0.0), 60.0);
+                vec3 irid = 0.5 + 0.5 * cos(uTime * 0.5 + n.y * 3.0 + vec3(0, 2, 4));
 
-                vec3 col = mix(refractedColor, rimColor, fresnel * 0.3);
-                col += vec3(1.0) * spec * 0.3;
+                vec3 col = mix(refractedColor, irid, fresnel * 0.2);
+                col += rimColor * 0.8;
                 
                 fragColor = vec4(col, 1.0); 
             } else {
@@ -497,13 +556,13 @@
             bgDist: 0.5,
             aberration: 0.0015,
             blur: 0.5,
-            flip: true, 
+            flip: true, // Real image by default
             bgTexture: null,
             hasTexture: false
         };
         
-        // Corrected Link
-        const defaultBg = "https://raw.githubusercontent.com/Dcode9/D-verse/4c07428cda7ce4bd9549aeeeb4b6fd0c95a7cc1c/assets/D'Verse_BG.png";
+        // Placeholder until you upload your galaxy image
+        const defaultBg = "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2048&auto=format&fit=crop";
 
         class PortalSphere {
             constructor(canvas) {
@@ -514,10 +573,6 @@
                 const colorStr = canvas.dataset.color || "1.0, 1.0, 1.0";
                 this.baseColor = colorStr.split(',').map(Number);
                 this.seed = parseFloat(canvas.dataset.seed || "0");
-                this.isStatic = canvas.dataset.static === "true";
-
-                this.fpsInterval = 1000 / 30; // 30 FPS Lock
-                this.then = performance.now();
 
                 this.init();
             }
@@ -577,35 +632,31 @@
             }
 
             render(time) {
-                requestAnimationFrame(this.render.bind(this));
-
-                const now = performance.now();
-                const elapsed = now - this.then;
-                if (elapsed < this.fpsInterval) return;
-                this.then = now - (elapsed % this.fpsInterval);
-
                 const gl = this.gl;
                 const rect = this.canvas.getBoundingClientRect();
                 
-                // Optimize Dpr
-                const dpr = 1.0; 
+                // Resize
+                const dpr = Math.min(window.devicePixelRatio, 1.5);
                 if (this.canvas.width !== this.canvas.clientWidth * dpr || this.canvas.height !== this.canvas.clientHeight * dpr) {
                     this.canvas.width = this.canvas.clientWidth * dpr;
                     this.canvas.height = this.canvas.clientHeight * dpr;
                     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
                 }
 
-                if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+                if (rect.bottom < 0 || rect.top > window.innerHeight) {
+                    requestAnimationFrame(this.render.bind(this));
+                    return;
+                }
 
                 gl.useProgram(this.program);
                 gl.bindVertexArray(this.vao);
 
                 gl.uniform2f(this.locs.res, this.canvas.width, this.canvas.height);
-                gl.uniform1f(this.locs.time, this.isStatic ? 0.0 : time * 0.001);
+                gl.uniform1f(this.locs.time, time * 0.001);
                 gl.uniform3fv(this.locs.baseColor, this.baseColor);
                 gl.uniform1f(this.locs.seed, this.seed);
                 
-                gl.uniform1f(this.locs.warp, this.isStatic ? 0.0 : state.warp);
+                gl.uniform1f(this.locs.warp, state.warp);
                 gl.uniform1f(this.locs.ior, state.ior);
                 gl.uniform1f(this.locs.bgDist, state.bgDist);
                 gl.uniform1f(this.locs.aberration, state.aberration);
@@ -631,6 +682,8 @@
                 gl.clearColor(0,0,0,0);
                 gl.clear(gl.COLOR_BUFFER_BIT);
                 gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+                requestAnimationFrame(this.render.bind(this));
             }
         }
 
@@ -639,14 +692,15 @@
             const instances = [];
             canvases.forEach(canvas => instances.push(new PortalSphere(canvas)));
 
+            // Load Default Background
             const bgImg = new Image();
             bgImg.crossOrigin = "Anonymous";
             bgImg.onload = () => {
-                document.getElementById('bg-layer').style.backgroundImage = `url("${defaultBg}")`;
+                document.getElementById('bg-layer').style.backgroundImage = `url(${defaultBg})`;
+                document.getElementById('procedural-bg').style.display = 'none';
                 state.bgImage = bgImg;
                 state.hasTexture = true;
                 
-                // One-time upload
                 instances.forEach(inst => {
                     const gl = inst.gl;
                     const tex = gl.createTexture();
@@ -660,7 +714,7 @@
             };
             bgImg.src = defaultBg;
 
-            // ... (Rest of UI Logic) ...
+            // UI Elements
             const warpSlider = document.getElementById('warpSlider');
             const warpVal = document.getElementById('warpVal');
             const refractSlider = document.getElementById('refractSlider');
@@ -677,7 +731,10 @@
             const controlsPanel = document.getElementById('controls-panel');
             const closeControls = document.getElementById('close-controls');
 
-            document.getElementById('main-title').addEventListener('dblclick', () => {
+            // --- Control Logic ---
+            
+            // Allow double click on main D'Verse text to open controls
+            document.querySelector('.title-glass').addEventListener('dblclick', () => {
                 controlsPanel.classList.remove('hidden');
             });
             closeControls.addEventListener('click', () => controlsPanel.classList.add('hidden'));
@@ -719,6 +776,7 @@
                         const img = new Image();
                         img.onload = () => {
                             bgLayer.style.backgroundImage = `url(${event.target.result})`;
+                            document.getElementById('procedural-bg').style.display = 'none';
                             state.bgImage = img;
                             state.hasTexture = true;
                             // Re-init textures in contexts
@@ -739,6 +797,7 @@
                 }
             });
 
+            // Scroll Logic (Elastic)
             const track = document.getElementById('horizontal-track');
             window.addEventListener('scroll', () => {
                 if (window.innerWidth > 768) {
@@ -759,19 +818,7 @@
                 }
             });
 
-            // Stars
-            const starLayer = document.getElementById('star-layer');
-            const count = window.innerWidth < 768 ? 30 : 100;
-            for(let i=0; i<count; i++) {
-                const s = document.createElement('div');
-                s.className = 'star';
-                const size = Math.random() * 2 + 1;
-                s.style.width = size+'px'; s.style.height = size+'px';
-                s.style.top = Math.random()*100+'%'; s.style.left = Math.random()*100+'%';
-                s.style.animationDelay = Math.random()*2+'s';
-                starLayer.appendChild(s);
-            }
-
+            // Auth Interactions
             const portals = document.querySelectorAll('.portal-wrapper');
             const signInLink = document.getElementById('sign-in-link');
             const userProfile = document.getElementById('user-profile');
@@ -783,12 +830,8 @@
             portals.forEach(portal => {
                 portal.addEventListener('click', (e) => {
                     e.preventDefault();
-                    // FIX: Ensure we use portal.dataset.url which is on the clicked element
-                    const targetUrl = portal.dataset.url;
                     portal.classList.add('portal-opening');
-                    setTimeout(() => { 
-                        if(targetUrl) window.location.href = targetUrl; 
-                    }, 800);
+                    setTimeout(() => { window.location.href = portal.parentElement.dataset.url; }, 800);
                 });
             });
 
@@ -825,6 +868,7 @@
             if (getCookie('dverseSessionToken')) fetchUserData();
             else signInLink.classList.remove('hidden');
 
+            // Dream Modal
             const dreamBtn = document.getElementById('dream-portal-btn');
             const dreamModal = document.getElementById('dream-modal-overlay');
             const closeDream = document.getElementById('close-dream-modal');
