@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>2026 New Year Experience - Interactive</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin="" src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin="" src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <!-- Google Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            margin: 0;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #00ffff; border-radius: 3px; }
+
+        /* CRT Scanline Effect */
+        .crt-overlay {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+    const { useState, useEffect, useRef, useMemo, useCallback } = React;
+    const { motion, AnimatePresence } = window.Motion;
+
+    // --- CONFIGURATION ---
+    const PHASE = {
+        COUNTDOWN: 'countdown',
+        VIDEO: 'video',
+        TIMELINE: 'timeline'
+    };
+
+    const THEME = {
+        CYAN: '#00ffff',
+        RED: '#ff003c',
+        YELLOW: '#fcee0a',
+        WHITE: '#ffffff'
+    };
+
+    // VIDEO URL
+    const VIDEO_URL = "https://github.com/Dcode9/D-verse/raw/828e4ea2262913c2ae30dc76d3c33c7d4cb909ce/Happy_Fireworks_Video.mp4";
+
+    // --- TIMELINE DATA & IMAGE PLACEHOLDERS ---
+    // PASTE YOUR GITHUB IMAGE PERMALINKS HERE
+    const TIMELINE_DATA = [
+        {
+            year: "Jan - Feb 2025",
+            title: "THE FOUNDATION",
+            desc: "The journey began with a commitment to digital ownership. I officially purchased the domain for 'D'Verse', moving my work from local concepts to a live web identity. This established the central hub for all my future projects.",
+            color: "border-cyan-500 shadow-cyan-500/20",
+            textColor: "text-cyan-400",
+            imageUrl: "" // Paste Link Here
+        },
+        {
+            year: "Mar - Apr 2025",
+            title: "THE AI UPGRADE",
+            desc: "I secured access to the Google AI Pro Offer, unlocking Veo 3. This was a technological turning point, giving me the ability to generate high-fidelity AI video content, which became the backbone of my storytelling workflow.",
+            color: "border-cyan-500 shadow-cyan-500/20",
+            textColor: "text-cyan-400",
+            imageUrl: "" // Paste Link Here
+        },
+        {
+            year: "May 2025",
+            title: "THE HAPPY PRINCE",
+            desc: "Merging my academic syllabus with my new tools, I produced my first major narrative adaptation: 'The Happy Prince' (Class 9, Chapter 5). This project proved that AI could be used to visualize complex literary themes effectively.",
+            color: "border-gray-500 shadow-white/10",
+            textColor: "text-gray-300",
+            imageUrl: "" // Paste Link Here
+        },
+        {
+            year: "June 2025",
+            title: "WEATHERING THE STORM",
+            desc: "Pushing the technical limits of Veo 3, I created 'Weathering the Storm in Ersama' (Class 9, Chapter 6). This project required advanced prompting to simulate realistic weather effects and cyclone imagery, marking a step up in my production quality.",
+            color: "border-gray-500 shadow-white/10",
+            textColor: "text-gray-300",
+            imageUrl: "" // Paste Link Here
+        },
+        {
+            year: "July 2025",
+            title: "D'AI & D'GAMES",
+            desc: "I expanded the 'D'Verse' portal into a multi-faceted platform. I launched 'D'AI' to showcase my generation capabilities and developed 'D'Games', where I not only designed the interface but successfully integrated playable web games for user interaction.",
+            color: "border-cyan-500 shadow-cyan-500/20",
+            textColor: "text-cyan-400",
+            imageUrl: "" // Paste Link Here
+        },
+        {
+            year: "Aug 2025",
+            title: "D'FILMS LAUNCH",
+            desc: "I officially launched my YouTube channel, D'Films. This marked my transition to a public creator. By the end of the year, the channel garnered 14 subscribers and over 2,400 views, serving as the primary broadcast medium for my work.",
+            color: "border-red-500 shadow-red-500/20",
+            textColor: "text-red-400",
+            imageUrl: "" // Paste Link Here
+        },
+        {
+            year: "Sep - Oct 2025",
+            title: "SPEED & DESIGN",
+            desc: "In the fall, I released 'D'AI - Scary Fast', a showcase of rapid creative workflows. Simultaneously, I took on professional design work for 'Shreejibapa Foods,' creating tangible assets like ID cards and conference boards.",
+            color: "border-yellow-500 shadow-yellow-500/20",
+            textColor: "text-yellow-400",
+            imageUrl: "" // Paste Link Here
+        },
+        {
+            year: "Nov 2025",
+            title: "PROJECT KINTSUGI",
+            desc: "Targeting the global stage, I developed the 'D'Films' Web App specifically for the 1 Billion Followers Summit. I wrote, directed, and produced 'Project Kintsugi' as my entry. Although it didn't reach the Top 12, the project was a masterclass in meeting professional deadlines and web app deployment.",
+            color: "border-yellow-500 shadow-yellow-500/20",
+            textColor: "text-yellow-400",
+            imageUrl: "" // Paste Link Here
+        },
+        {
+            year: "Dec 2025",
+            title: "THE BEGGAR",
+            desc: "Closing the year strong, I began production on 'The Beggar' (Class 9, Chapter 10). Unlike previous projects, this was designed as a realistic animated film, utilizing all the techniques I had refined throughout 2025. This ran in parallel with building the HTML foundation for the next iteration of the D'Verse portal.",
+            color: "border-red-500 shadow-red-500/20",
+            textColor: "text-red-400",
+            imageUrl: "" // Paste Link Here
+        }
+    ];
+
+    // --- FLOWING GRADIENT BACKGROUND ---
+    const SubtleBackground = () => {
+        const canvasRef = useRef(null);
+        
+        useEffect(() => {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            let w, h, t = 0;
+
+            const resize = () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            };
+            window.addEventListener('resize', resize);
+            resize();
+
+            const run = () => {
+                t += 0.002;
+                // Clear
+                ctx.fillStyle = '#050505';
+                ctx.fillRect(0, 0, w, h);
+
+                // Create moving gradient points
+                const g = ctx.createLinearGradient(0, 0, w, h);
+                // Subtle shifting colors
+                const c1 = Math.sin(t) * 20 + 20; // Dark Blue range
+                const c2 = Math.cos(t * 0.7) * 20 + 40; // Purple/Magenta range
+                
+                g.addColorStop(0, `hsl(240, 50%, ${5 + Math.sin(t)*2}%)`);
+                g.addColorStop(0.5, `hsl(280, 40%, ${8 + Math.cos(t)*2}%)`);
+                g.addColorStop(1, `hsl(200, 50%, ${5 + Math.sin(t*1.2)*2}%)`);
+                
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, w, h);
+
+                requestAnimationFrame(run);
+            };
+            run();
+        }, []);
+
+        return <canvas ref={canvasRef} className="absolute inset-0 z-0" />;
+    };
+
+    // --- ODOMETER DIGIT (PURE TEXT) ---
+    const OdometerDigit = ({ value, label }) => {
+        const displayValue = value.toString().padStart(2, '0');
+        
+        return (
+            <div className="flex flex-col items-center mx-2 md:mx-4">
+                <div className="relative h-24 md:h-40 w-32 md:w-48 flex items-center justify-center">
+                    <AnimatePresence mode="popLayout" initial={false}>
+                        <motion.div
+                            key={displayValue}
+                            initial={{ y: "50%", opacity: 0, filter: "blur(15px)" }}
+                            animate={{ y: "0%", opacity: 1, filter: "blur(0px)" }}
+                            exit={{ y: "-50%", opacity: 0, filter: "blur(15px)", position: "absolute" }}
+                            transition={{ duration: 0.6, ease: "anticipate" }}
+                            className="flex items-center justify-center"
+                        >
+                            <span className="text-6xl md:text-9xl font-mono font-bold text-white tabular-nums leading-none">
+                                {displayValue}
+                            </span>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+                {label && <span className="text-[10px] md:text-xs text-cyan-500/60 font-mono tracking-[0.3em] uppercase mt-2">{label}</span>}
+            </div>
+        );
+    };
+
+    // --- PHYSICS PARTICLE ENGINE (STEERING + COLLISION) ---
+    const ParticleTextEngine = ({ text, intensity, width, height }) => {
+        const canvasRef = useRef(null);
+        const particlesRef = useRef([]);
+        const targetPointsRef = useRef([]);
+        const prevTextRef = useRef(text);
+        
+        const DENSITY = 5; 
+        const PARTICLE_SIZE = intensity >= 2 ? 3 : 2.5;
+        const BASE_PARTICLES = 1500;
+
+        // Generate Target Points
+        const scanText = useCallback((currentText) => {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            tempCtx.font = `900 ${Math.min(width, height) * 0.35}px "Arial Black", sans-serif`;
+            tempCtx.textAlign = 'center';
+            tempCtx.textBaseline = 'middle';
+            tempCtx.fillStyle = 'white';
+            tempCtx.fillText(currentText, width / 2, height / 2);
+            const imageData = tempCtx.getImageData(0, 0, width, height).data;
+            const points = [];
+            for (let y = 0; y < height; y += DENSITY) {
+                for (let x = 0; x < width; x += DENSITY) {
+                    const index = (y * width + x) * 4;
+                    if (imageData[index + 3] > 128) points.push({ x, y });
+                }
+            }
+            return points;
+        }, [width, height]);
+
+        // Initialize Particles Off-Screen
+        useEffect(() => {
+            if (particlesRef.current.length === 0) {
+                for (let i = 0; i < BASE_PARTICLES; i++) {
+                    const edge = Math.floor(Math.random() * 4);
+                    let x, y;
+                    switch(edge) {
+                        case 0: x = Math.random() * width; y = -50; break;
+                        case 1: x = width + 50; y = Math.random() * height; break;
+                        case 2: x = Math.random() * width; y = height + 50; break;
+                        case 3: x = -50; y = Math.random() * height; break;
+                    }
+                    particlesRef.current.push({
+                        x, y, vx: 0, vy: 0,
+                        color: THEME.CYAN
+                    });
+                }
+            }
+        }, []);
+
+        // Update Targets
+        useEffect(() => {
+            // Always update targets
+            targetPointsRef.current = text ? scanText(text) : [];
+            
+            // Burst Effect if text changed (and it's a number)
+            if (text !== prevTextRef.current) {
+                const isNum = !isNaN(parseInt(text));
+                if(isNum) {
+                    particlesRef.current.forEach(p => {
+                        const angle = Math.random() * Math.PI * 2;
+                        const force = Math.random() * 50;
+                        p.vx += Math.cos(angle) * force;
+                        p.vy += Math.sin(angle) * force;
+                    });
+                }
+                prevTextRef.current = text;
+            }
+        }, [text, width, height, scanText]);
+
+        const getParticleColor = (val) => {
+            const num = parseInt(val);
+            if (isNaN(num)) return THEME.CYAN;
+            if (num === 5) return '#facc15';
+            if (num === 4) return '#fb923c';
+            if (num === 3) return '#f87171';
+            if (num === 2) return '#dc2626';
+            if (num === 1) return '#ffffff';
+            return THEME.CYAN;
+        };
+
+        useEffect(() => {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            let frameId;
+
+            const update = () => {
+                ctx.clearRect(0, 0, width, height);
+                
+                const targets = targetPointsRef.current;
+                const particles = particlesRef.current;
+                const activeColor = getParticleColor(text);
+
+                particles.forEach((p, i) => {
+                    let forceX = 0;
+                    let forceY = 0;
+
+                    if (i < targets.length) {
+                        const target = targets[i];
+                        let tx = target.x;
+                        let ty = target.y;
+
+                        // 5-0 Vibration (Jitter target)
+                        if (intensity === 2) {
+                            tx += (Math.random() - 0.5) * 8;
+                            ty += (Math.random() - 0.5) * 8;
+                        }
+
+                        // STEERING: ARRIVE
+                        const dx = tx - p.x;
+                        const dy = ty - p.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        
+                        // Fast arrival
+                        const speed = dist * 0.1; 
+                        forceX += (dx / dist) * speed;
+                        forceY += (dy / dist) * speed;
+                    } else {
+                        // Orbit center if unused
+                        const cx = width/2;
+                        const cy = height/2;
+                        const dx = cx - p.x;
+                        const dy = cy - p.y;
+                        forceX += dx * 0.001;
+                        forceY += dy * 0.001;
+                    }
+
+                    // SEPARATION (Collision approximation)
+                    for (let j = Math.max(0, i - 10); j < Math.min(particles.length, i + 10); j++) {
+                        if (i === j) continue;
+                        const other = particles[j];
+                        const dx = p.x - other.x;
+                        const dy = p.y - other.y;
+                        const distSq = dx*dx + dy*dy;
+                        const minDist = PARTICLE_SIZE * 2.5; 
+                        
+                        if (distSq > 0 && distSq < minDist * minDist) {
+                            const dist = Math.sqrt(distSq);
+                            const push = (minDist - dist) / dist; 
+                            forceX += dx * push * 0.5;
+                            forceY += dy * push * 0.5;
+                        }
+                    }
+
+                    p.vx += forceX;
+                    p.vy += forceY;
+                    p.vx *= 0.85; // Damping
+                    p.vy *= 0.85;
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Draw
+                    ctx.fillStyle = activeColor;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, PARTICLE_SIZE, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                frameId = requestAnimationFrame(update);
+            };
+            update();
+            return () => cancelAnimationFrame(frameId);
+        }, [width, height, text, intensity, PARTICLE_SIZE]); // Added PARTICLE_SIZE to dependency
+
+        return <canvas ref={canvasRef} width={width} height={height} className="absolute inset-0 z-20" />;
+    };
+
+    // --- MAIN APP ---
+    const App = () => {
+        const [phase, setPhase] = useState(PHASE.COUNTDOWN);
+        const [timeLeft, setTimeLeft] = useState(0); 
+        const [windowSize, setWindowSize] = useState({ w: window.innerWidth, h: window.innerHeight });
+        const [isLive, setIsLive] = useState(true); 
+        const videoRef = useRef(null);
+
+        // --- IST TIME SYNC ---
+        useEffect(() => {
+            const calculateTimeLeft = () => {
+                const targetDate = new Date("2026-01-01T00:00:00+05:30").getTime();
+                const now = Date.now();
+                return Math.max(0, Math.floor((targetDate - now) / 1000));
+            };
+
+            if (isLive) setTimeLeft(calculateTimeLeft());
+
+            const interval = setInterval(() => {
+                if (isLive) {
+                    const remaining = calculateTimeLeft();
+                    setTimeLeft(remaining);
+                    if (remaining <= 0 && phase === PHASE.COUNTDOWN) triggerVideo();
+                } else {
+                    setTimeLeft(prev => {
+                        const next = Math.max(0, prev - 1);
+                        if (next <= 0 && phase === PHASE.COUNTDOWN) triggerVideo();
+                        return next;
+                    });
+                }
+            }, 1000);
+            return () => clearInterval(interval);
+        }, [phase, isLive]);
+
+        const triggerVideo = () => {
+            if (videoRef.current) {
+                videoRef.current.style.display = 'block';
+                videoRef.current.play().catch(e => console.log("Autoplay prevented:", e));
+            }
+            setPhase(PHASE.VIDEO);
+            
+            // Auto transition to Timeline after video finishes (approx 10s)
+            setTimeout(() => {
+                setPhase(PHASE.TIMELINE);
+            }, 12000); 
+        };
+
+        useEffect(() => {
+            const handleResize = () => setWindowSize({ w: window.innerWidth, h: window.innerHeight });
+            window.addEventListener('resize', handleResize);
+            return () => window.removeEventListener('resize', handleResize);
+        }, []);
+
+        const intensity = useMemo(() => {
+            if (timeLeft <= 5 && timeLeft > 0) return 2; 
+            if (timeLeft <= 10) return 1; 
+            return 0; 
+        }, [timeLeft]);
+
+        const timeParts = useMemo(() => {
+            const h = Math.floor(timeLeft / 3600);
+            const m = Math.floor((timeLeft % 3600) / 60);
+            const s = Math.floor(timeLeft % 60);
+            return { h, m, s };
+        }, [timeLeft]);
+
+        return (
+            <div className="relative w-full h-screen overflow-hidden bg-black text-white">
+                <SubtleBackground />
+                <div className="absolute inset-0 crt-overlay z-50 pointer-events-none"></div>
+
+                {/* --- VIDEO LAYER --- */}
+                <motion.div
+                    className="absolute inset-0 z-40 pointer-events-none"
+                    initial={{ opacity: 0 }}
+                    animate={phase === PHASE.VIDEO ? { opacity: 1 } : (phase === PHASE.TIMELINE ? { opacity: 0, filter: "blur(20px)" } : { opacity: 0 })}
+                    transition={{ duration: 2 }}
+                >
+                    <video 
+                        ref={videoRef}
+                        className="w-full h-full object-cover"
+                        style={{ display: 'none' }} 
+                        src={VIDEO_URL}
+                        preload="auto"
+                        playsInline
+                        muted={false} 
+                    />
+                </motion.div>
+
+                {/* --- COUNTDOWN LAYER --- */}
+                <AnimatePresence>
+                    {phase === PHASE.COUNTDOWN && (
+                        <motion.div 
+                            key="countdown" 
+                            className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden z-30"
+                            exit={{ opacity: 0, scale: 1.5, filter: "blur(10px)" }}
+                            transition={{ duration: 1 }}
+                        >
+                            {timeLeft <= 10 ? (
+                                <ParticleTextEngine text={timeLeft > 0 ? timeLeft.toString() : ""} intensity={intensity} width={windowSize.w} height={windowSize.h} />
+                            ) : (
+                                <div className="flex items-baseline gap-2 md:gap-6">
+                                    <OdometerDigit value={timeParts.h} label="HRS" />
+                                    <div className="text-4xl md:text-8xl font-mono text-zinc-600 pb-4 animate-pulse">:</div>
+                                    <OdometerDigit value={timeParts.m} label="MIN" />
+                                    <div className="text-4xl md:text-8xl font-mono text-zinc-600 pb-4 animate-pulse">:</div>
+                                    <OdometerDigit value={timeParts.s} label="SEC" />
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* --- TIMELINE LAYER --- */}
+                <div className={`absolute inset-0 z-20 transition-opacity duration-1000 overflow-y-auto ${phase === PHASE.TIMELINE ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                    <TimelineView />
+                </div>
+            </div>
+        );
+    };
+
+    // --- TIMELINE VIEW ---
+    const TimelineView = () => {
+        return (
+            <div className="min-h-screen bg-transparent pb-20 pt-20">
+                <div className="sticky top-0 bg-black/80 backdrop-blur-md z-50 p-6 border-b border-gray-800 flex justify-between items-center mb-10 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+                    <h2 className="text-xl md:text-2xl font-bold tracking-widest text-white">MY JOURNEY <span className="text-cyan-500">2025</span></h2>
+                </div>
+
+                <div className="max-w-4xl mx-auto px-6 relative">
+                    {/* Glowing Central Line */}
+                    <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-cyan-500 to-transparent opacity-50 shadow-[0_0_15px_cyan]"></div>
+                    
+                    {TIMELINE_DATA.map((evt, idx) => (
+                        <motion.div 
+                            key={idx}
+                            initial={{ opacity: 0, y: 100, scale: 0.9 }}
+                            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ duration: 0.6, type: "spring", bounce: 0.3 }}
+                            className={`flex flex-col md:flex-row items-center mb-32 relative ${idx % 2 === 0 ? 'md:flex-row-reverse' : ''}`}
+                        >
+                            {/* Connector Dot */}
+                            <div className="absolute left-0 md:left-1/2 w-6 h-6 -ml-3 rounded-full bg-black border-2 border-white shadow-[0_0_20px_white] z-10 flex items-center justify-center">
+                                <div className={`w-2 h-2 rounded-full ${evt.textColor.replace('text', 'bg')}`}></div>
+                            </div>
+                            
+                            <div className={`w-full md:w-1/2 md:px-12 pl-12`}>
+                                <div className={`
+                                    bg-zinc-900/60 border border-white/5 
+                                    p-6 rounded-xl backdrop-blur-lg 
+                                    hover:bg-zinc-900/80 transition-all duration-300
+                                    hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]
+                                    ${evt.color} shadow-lg
+                                `}>
+                                    {/* IMAGE PLACEHOLDER AREA */}
+                                    <div className="h-48 bg-black/50 rounded-lg mb-4 flex items-center justify-center border border-white/10 overflow-hidden relative group-hover:border-white/30 transition-all">
+                                        {evt.imageUrl ? (
+                                            <img src={evt.imageUrl} alt={evt.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                                        ) : (
+                                            <>
+                                                <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                                                <div className="text-center z-10 p-4">
+                                                    <span className="material-symbols-outlined text-4xl text-gray-600 mb-2 block animate-pulse">image</span>
+                                                    <span className="text-[10px] font-mono text-gray-500 tracking-widest uppercase">
+                                                        Paste Image URL in Code<br/>[ Index: {idx} ]
+                                                    </span>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    <div className="text-5xl font-black text-white/5 absolute top-2 right-4 select-none pointer-events-none">{evt.year.split(' ')[0]}</div>
+                                    <div className={`text-xs font-bold tracking-[0.2em] mb-2 ${evt.textColor}`}>{evt.year}</div>
+                                    <h3 className="text-2xl font-bold text-white mb-3 relative z-10">{evt.title}</h3>
+                                    <p className="text-gray-400 font-mono text-sm leading-relaxed">{evt.desc}</p>
+                                </div>
+                            </div>
+                            <div className="hidden md:block w-1/2"></div>
+                        </motion.div>
+                    ))}
+
+                    {/* RETURN BUTTON */}
+                    <div className="flex justify-center pb-20 mt-20">
+                        <a 
+                            href="https://dverse.fun" 
+                            className="
+                                px-8 py-4 rounded-full 
+                                bg-white/10 border border-white/20 
+                                text-white font-bold tracking-widest 
+                                hover:bg-white/20 hover:scale-105 hover:border-cyan-500 hover:text-cyan-400 hover:shadow-[0_0_30px_rgba(0,255,255,0.3)]
+                                transition-all duration-300 backdrop-blur-md
+                                flex items-center gap-3
+                            "
+                        >
+                            <span className="material-symbols-outlined">home</span>
+                            RETURN TO D'VERSE
+                        </a>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+</script>
+</body>
+</html>
