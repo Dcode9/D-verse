@@ -49,4 +49,28 @@ Security advisors are clean as of the initial setup. Performance advisors still 
 
 ## Google OAuth Setup
 
-In Google Cloud Console, create OAuth clients for the D'Verse web apps and mobile app if needed. In Supabase Auth provider settings, enable Google and use the Supabase callback URL shown in the provider setup screen for project gmwieijbrrztukqpfwkg.
+Supabase Auth Google provider setup is the remaining dashboard-only step because it requires a Google OAuth Client ID and Client Secret.
+
+1. In Google Cloud Console, open Google Auth Platform and configure branding as `D'Verse`.
+2. In Data Access / Scopes, keep the minimal scopes: `openid`, `userinfo.email`, and `userinfo.profile`.
+3. Create a Web OAuth client.
+4. Add each production app origin to Authorized JavaScript origins.
+5. Add this Supabase callback URL to Authorized redirect URIs:
+
+```text
+https://gmwieijbrrztukqpfwkg.supabase.co/auth/v1/callback
+```
+
+6. In Supabase Dashboard, open `dverse-production` > Authentication > Providers > Google.
+7. Enable Google and paste the Google Client ID and Client Secret.
+8. Add app URLs to Supabase Authentication URL Configuration / Redirect URLs before public launch.
+
+Supabase also documents a Management API fallback for this exact provider config:
+
+```json
+{
+  "external_google_enabled": true,
+  "external_google_client_id": "your-google-client-id",
+  "external_google_secret": "your-google-client-secret"
+}
+```
