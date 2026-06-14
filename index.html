@@ -595,6 +595,24 @@
         ]);
         const DVERSE_RETURN_TO_KEY = 'dverse.auth.returnTo';
 
+        function base64UrlEncode(value) {
+            const bytes = new TextEncoder().encode(JSON.stringify(value));
+            let binary = '';
+            bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
+        function publicDverseSession(session) {
+            return session ? {
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+                expires_at: session.expires_at,
+                expires_in: session.expires_in,
+                token_type: session.token_type,
+                user: session.user
+            } : null;
+        }
+
         function safeDverseReturnUrl(rawValue) {
             if (!rawValue) return null;
             try {
@@ -627,7 +645,15 @@
             const returnTo = session ? getPendingDverseReturnUrl() : null;
             if (!returnTo) return false;
             sessionStorage.removeItem(DVERSE_RETURN_TO_KEY);
-            window.location.href = returnTo;
+            const target = new URL(returnTo);
+            const handoff = publicDverseSession(session);
+            if (handoff?.access_token && handoff?.refresh_token) {
+                const hashText = target.hash ? target.hash.slice(1) : '';
+                const params = new URLSearchParams(hashText.startsWith('?') ? hashText.slice(1) : hashText);
+                params.set('dverse_session', base64UrlEncode(handoff));
+                target.hash = params.toString();
+            }
+            window.location.href = target.href;
             return true;
         }
 
