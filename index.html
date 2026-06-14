@@ -579,7 +579,15 @@
         }
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        const DVERSE_SUPABASE_URL = window.DVERSE_SUPABASE_URL || 'https://gmwieijbrrztukqpfwkg.supabase.co';
+        const DVERSE_SUPABASE_KEY = window.DVERSE_SUPABASE_KEY || 'sb_publishable_KX3MYtV84QJJdy9bPDuMEA_V99sLKSE';
+        const dverseSupabase = window.supabase
+            ? window.supabase.createClient(DVERSE_SUPABASE_URL, DVERSE_SUPABASE_KEY)
+            : null;
+        const dverseAuthRedirectUrl = () => `${window.location.origin}/`;
+
         const state = {
             warp: 0.26,
             ior: 1.11,
@@ -865,38 +873,65 @@
                 });
             });
 
-            function getCookie(name) {
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; ${name}=`);
-                if (parts.length === 2) return parts.pop().split(';').shift();
-                return null;
+            function avatarFallback(name) {
+                const initial = encodeURIComponent((name || "D").charAt(0).toUpperCase());
+                return `https://placehold.co/96x96/111827/ffffff?text=${initial}`;
             }
-            function eraseCookie(name) {   
-                document.cookie = `${name}=; Max-Age=-99999999; path=/; domain=.dverse.fun`;  
+
+            function renderSignedOut() {
+                signInLink.classList.remove('hidden');
+                userProfile.classList.add('hidden');
+                document.getElementById('dream-portal-btn').classList.add('hidden');
             }
+
+            function renderSignedIn(session) {
+                const meta = session?.user?.user_metadata || {};
+                const name = meta.full_name || meta.name || session?.user?.email || "D'Verse User";
+                signInLink.classList.add('hidden');
+                userProfile.classList.remove('hidden');
+                document.getElementById('dream-portal-btn').classList.remove('hidden');
+                userName.textContent = name;
+                userCredits.textContent = session?.user?.email || "D'Verse Id";
+                userAvatar.src = meta.avatar_url || meta.picture || avatarFallback(name);
+            }
+
             window.handleLoginClick = function(e) {
                 e.preventDefault();
-                const currentUrl = window.location.href.split('?')[0];
-                window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(currentUrl)}`;
+                if (!dverseSupabase) {
+                    signInLink.textContent = "Auth unavailable";
+                    return;
+                }
+                dverseSupabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: dverseAuthRedirectUrl() }
+                });
             };
 
-            async function fetchUserData() {
+            async function initDverseAuth() {
+                if (!dverseSupabase) {
+                    renderSignedOut();
+                    return;
+                }
+                logoutBtn.addEventListener('click', async () => {
+                    await dverseSupabase.auth.signOut();
+                    renderSignedOut();
+                });
+                dverseSupabase.auth.onAuthStateChange((_event, session) => {
+                    if (session) renderSignedIn(session);
+                    else renderSignedOut();
+                });
                 try {
-                    const response = await fetch('https://authfordev.dverse.fun/api/user', { credentials: 'include' });
-                    if (!response.ok) throw new Error();
-                    const userData = await response.json();
-                    signInLink.classList.add('hidden');
-                    userProfile.classList.remove('hidden');
-                    document.getElementById('dream-portal-btn').classList.remove('hidden');
-                    userName.textContent = userData.name;
-                    userCredits.textContent = `${userData.credits} CR`;
-                    userAvatar.src = userData.avatarUrl;
-                    logoutBtn.addEventListener('click', () => { eraseCookie('dverseSessionToken'); window.location.reload(); });
-                } catch (e) { signInLink.classList.remove('hidden'); }
+                    const { data, error } = await dverseSupabase.auth.getSession();
+                    if (error) throw error;
+                    if (data.session) renderSignedIn(data.session);
+                    else renderSignedOut();
+                } catch (e) {
+                    console.error('DVerse auth restore failed:', e);
+                    renderSignedOut();
+                }
             }
 
-            if (getCookie('dverseSessionToken')) fetchUserData();
-            else signInLink.classList.remove('hidden');
+            initDverseAuth();
 
             // Dream Modal
             const dreamBtn = document.getElementById('dream-portal-btn');
@@ -916,12 +951,12 @@
                 if(!prompt) return;
                 dreamForm.classList.add('hidden'); dreamLoading.classList.remove('hidden');
                 try {
-                    const res = await fetch('https://authfordev.dverse.fun/api/dream', {
-                        method: 'POST', headers: {'Content-Type':'application/json'},
-                        credentials: 'include', body: JSON.stringify({prompt})
-                    });
-                    if(!res.ok) throw new Error();
-                    const data = await res.json();
+                    const cleaned = prompt.replace(/[^\w\s'-]/g, '').trim().split(/\s+/).slice(0, 4).join(' ');
+                    const data = {
+                        portalName: cleaned ? `D'${cleaned}` : "D'New Portal",
+                        tagline: "A D'Verse idea ready to prototype.",
+                        description: `Saved as a local concept for now: ${prompt}`
+                    };
                     dreamResults.innerHTML = `
                         <h3 class="text-xl font-bold text-accent-blue mt-2">${data.portalName}</h3>
                         <p class="text-gray-300 italic mb-2">"${data.tagline}"</p>
