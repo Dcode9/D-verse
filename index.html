@@ -587,6 +587,51 @@
             ? window.supabase.createClient(DVERSE_SUPABASE_URL, DVERSE_SUPABASE_KEY)
             : null;
         const dverseAuthRedirectUrl = () => `${window.location.origin}/`;
+        const DVERSE_ALLOWED_RETURN_ORIGINS = new Set([
+            'https://ai.dverse.fun',
+            'https://tunes.dverse.fun',
+            'https://webboard.dverse.fun',
+            'https://quest.dverse.fun'
+        ]);
+        const DVERSE_RETURN_TO_KEY = 'dverse.auth.returnTo';
+
+        function safeDverseReturnUrl(rawValue) {
+            if (!rawValue) return null;
+            try {
+                const url = new URL(rawValue, window.location.origin);
+                if (!DVERSE_ALLOWED_RETURN_ORIGINS.has(url.origin)) return null;
+                return `${url.origin}${url.pathname || '/'}${url.search}${url.hash}`;
+            } catch (error) {
+                console.warn('Ignored invalid DVerse return URL:', error);
+                return null;
+            }
+        }
+
+        function captureDverseReturnUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const returnTo = safeDverseReturnUrl(params.get('dverse_return_to'));
+            if (!returnTo) return null;
+            sessionStorage.setItem(DVERSE_RETURN_TO_KEY, returnTo);
+            params.delete('dverse_return_to');
+            const query = params.toString();
+            const cleanUrl = `${window.location.pathname || '/'}${query ? `?${query}` : ''}${window.location.hash}`;
+            window.history.replaceState({}, '', cleanUrl);
+            return returnTo;
+        }
+
+        function getPendingDverseReturnUrl() {
+            return safeDverseReturnUrl(sessionStorage.getItem(DVERSE_RETURN_TO_KEY));
+        }
+
+        function completeDverseReturnIfNeeded(session) {
+            const returnTo = session ? getPendingDverseReturnUrl() : null;
+            if (!returnTo) return false;
+            sessionStorage.removeItem(DVERSE_RETURN_TO_KEY);
+            window.location.href = returnTo;
+            return true;
+        }
+
+        captureDverseReturnUrl();
 
         const state = {
             warp: 0.26,
@@ -897,15 +942,23 @@
 
             window.handleLoginClick = function(e) {
                 e.preventDefault();
+                startDverseLogin().catch((error) => {
+                    console.error('DVerse login failed:', error);
+                    signInLink.textContent = "Sign-in failed";
+                });
+            };
+
+            async function startDverseLogin() {
                 if (!dverseSupabase) {
                     signInLink.textContent = "Auth unavailable";
                     return;
                 }
-                dverseSupabase.auth.signInWithOAuth({
+                const { error } = await dverseSupabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: { redirectTo: dverseAuthRedirectUrl() }
                 });
-            };
+                if (error) throw error;
+            }
 
             async function initDverseAuth() {
                 if (!dverseSupabase) {
@@ -917,13 +970,16 @@
                     renderSignedOut();
                 });
                 dverseSupabase.auth.onAuthStateChange((_event, session) => {
+                    if (completeDverseReturnIfNeeded(session)) return;
                     if (session) renderSignedIn(session);
                     else renderSignedOut();
                 });
                 try {
                     const { data, error } = await dverseSupabase.auth.getSession();
                     if (error) throw error;
+                    if (completeDverseReturnIfNeeded(data.session)) return;
                     if (data.session) renderSignedIn(data.session);
+                    else if (getPendingDverseReturnUrl()) await startDverseLogin();
                     else renderSignedOut();
                 } catch (e) {
                     console.error('DVerse auth restore failed:', e);
