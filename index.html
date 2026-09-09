@@ -655,11 +655,33 @@
             }
         }
 
+        function getDverseCookie(name) {
+            const prefix = name + '=';
+            const parts = document.cookie.split('; ');
+            for (let i = 0; i < parts.length; i++) {
+                if (parts[i].indexOf(prefix) === 0) {
+                    return decodeURIComponent(parts[i].substring(prefix.length));
+                }
+            }
+            return null;
+        }
+
+        function setDverseCookie(name, val, maxAge = 600) {
+            document.cookie = name + '=' + encodeURIComponent(val) + '; domain=.d-verse.in; path=/; max-age=' + maxAge + '; SameSite=Lax; Secure';
+        }
+
+        function clearDverseCookie(name) {
+            document.cookie = name + '=; domain=.d-verse.in; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure';
+        }
+
         function captureDverseReturnUrl() {
             const params = new URLSearchParams(window.location.search);
             const returnTo = safeDverseReturnUrl(params.get('dverse_return_to'));
             if (!returnTo) return null;
             sessionStorage.setItem(DVERSE_RETURN_TO_KEY, returnTo);
+            try { localStorage.setItem(DVERSE_RETURN_TO_KEY, returnTo); } catch (_) {}
+            setDverseCookie(DVERSE_RETURN_TO_KEY, returnTo);
+            setDverseCookie('dverse_auth_return_to', returnTo);
             params.delete('dverse_return_to');
             const query = params.toString();
             const cleanUrl = `${window.location.pathname || '/'}${query ? `?${query}` : ''}${window.location.hash}`;
@@ -668,13 +690,19 @@
         }
 
         function getPendingDverseReturnUrl() {
-            return safeDverseReturnUrl(sessionStorage.getItem(DVERSE_RETURN_TO_KEY));
+            return safeDverseReturnUrl(sessionStorage.getItem(DVERSE_RETURN_TO_KEY)) ||
+                   safeDverseReturnUrl(getDverseCookie(DVERSE_RETURN_TO_KEY)) ||
+                   safeDverseReturnUrl(getDverseCookie('dverse_auth_return_to')) ||
+                   safeDverseReturnUrl(localStorage.getItem(DVERSE_RETURN_TO_KEY));
         }
 
         function completeDverseReturnIfNeeded(session) {
             const returnTo = session ? getPendingDverseReturnUrl() : null;
             if (!returnTo) return false;
             sessionStorage.removeItem(DVERSE_RETURN_TO_KEY);
+            try { localStorage.removeItem(DVERSE_RETURN_TO_KEY); } catch (_) {}
+            clearDverseCookie(DVERSE_RETURN_TO_KEY);
+            clearDverseCookie('dverse_auth_return_to');
             const target = new URL(returnTo);
             const handoff = publicDverseSession(session);
             if (handoff?.access_token && handoff?.refresh_token) {

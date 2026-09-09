@@ -63,22 +63,22 @@ https://gmwieijbrrztukqpfwkg.supabase.co/auth/v1/callback
 
 6. In Supabase Dashboard, open `dverse-production` > Authentication > Providers > Google.
 7. Enable Google and paste the Google Client ID and Client Secret.
-8. In Supabase Dashboard > Authentication > URL Configuration, set Site URL to `https://dverse.fun/`.
+8. In Supabase Dashboard > Authentication > URL Configuration, set Site URL to `https://d-verse.in/`.
 
 Apps now start sign-in at the D'Verse portal and return through the portal auth bridge. The only required Supabase redirect URL for this central flow is:
 
 ```text
-https://dverse.fun/
+https://d-verse.in/
 ```
 
 You can still add the app URLs as optional direct OAuth redirect URLs:
 
 ```text
-https://dverse.fun/
-https://ai.dverse.fun/
-https://tunes.dverse.fun/
-https://webboard.dverse.fun/
-https://quest.dverse.fun/
+https://d-verse.in/
+https://ai.d-verse.in/
+https://tunes.d-verse.in/
+https://webboard.d-verse.in/
+https://quest.d-verse.in/
 ```
 
 If any app uses direct OAuth and is missing here, Supabase will ignore that app's `redirectTo` value and fall back to the Site URL, which makes login return to the D'Verse portal instead of the app.
